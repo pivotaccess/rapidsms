@@ -1,6 +1,7 @@
 import rapidsms
 
 from rapidsms.parsers.keyworder import Keyworder
+import re
 
 class App (rapidsms.app.App):
     
@@ -43,6 +44,14 @@ class App (rapidsms.app.App):
     @keyword("reg (whatever)")
     def register(self, message, notice):
         self.debug("REG message: %s" % message.text)
+        m = re.search("reg\s+(\d+)\s+(\d+)", message.text)
+        self.debug("Reg mesaage: %s" % m)
+        if m:
+            self.debug("chw id: %s  clinic id: %s" % (m.group(1), m.group(2)))
+            message.respond("Thank you for registering")
+        else:
+            message.respond("The correct message fformat is REG CHWID CLINICID")
+        
         return True
         
     @keyword("sup (whatever)")
