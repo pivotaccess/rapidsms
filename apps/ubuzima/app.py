@@ -46,7 +46,7 @@ class App (rapidsms.app.App):
     @keyword("reg (whatever)")
     def register(self, message, notice):
         self.debug("REG message: %s" % message.text)
-        m = re.search("reg\s+(\d+)\s+(\d+)(.*)", message.text)
+        m = re.search("reg\s+(\d+)\s+(\d+)(.*)", message.text, re.IGNORECASE)
              
         
         if not m:

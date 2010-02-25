@@ -15,6 +15,8 @@ class TestApp (TestScript):
         1 < Unknown clinic id: 01
 	1 > reg 01 01001
 	1 < Thank you for registering at Biryogo
+        3 > REG 01 01001
+        3 < Thank you for registering at Biryogo
     """
 
     # define your test scripts here.
