@@ -46,13 +46,22 @@ class App (rapidsms.app.App):
     @keyword("reg (whatever)")
     def register(self, message, notice):
         self.debug("REG message: %s" % message.text)
-        m = re.search("reg\s+(\d+)\s+(\d+)", message.text)
+        m = re.search("reg\s+(\d+)\s+(\d+)(.*)", message.text)
+             
         
         if not m:
             message.respond("The correct message format is REG CHWID CLINICID")
             return True
-         
+        
+        optional_part = m.group(3)
         received_clinic_id = m.group(2)
+        
+        m2 = re.search("(fr|eng|rw)", optional_part)    
+           
+        if m2:
+            lang = m2.group(1)
+            self.debug("Your prefered language is: %s" % lang)
+        
         clinics = Location.objects.filter(code=received_clinic_id)
         
         if not clinics:
@@ -64,6 +73,8 @@ class App (rapidsms.app.App):
         if clinic.type.name == "District" or clinic.type.name == "Province":
            message.respond("Invalid Clinic id: %s" % (received_clinic_id))
            return True
+    
+    
         
         message.respond("Thank you for registering at %s" % (clinics[0].name))
         

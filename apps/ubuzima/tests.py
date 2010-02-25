@@ -4,6 +4,19 @@ from app import App
 class TestApp (TestScript):
     apps = (App,)
 
+    fixtures = ("fosa_location_types", "fosa_test_locations")
+
+    testRegister = """
+        2 > reg 10 05
+        2 < Invalid Clinic id: 05
+	1 > reg asdf
+        1 < The correct message format is REG CHWID CLINICID
+	1 > reg 01 01
+        1 < Unknown clinic id: 01
+	1 > reg 01 01001
+	1 < Thank you for registering at Biryogo
+    """
+
     # define your test scripts here.
     # e.g.:
     #
