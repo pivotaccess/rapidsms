@@ -2,6 +2,8 @@ import rapidsms
 
 from rapidsms.parsers.keyworder import Keyworder
 import re
+from apps.locations.models import Location
+
 
 class App (rapidsms.app.App):
     
@@ -45,12 +47,31 @@ class App (rapidsms.app.App):
     def register(self, message, notice):
         self.debug("REG message: %s" % message.text)
         m = re.search("reg\s+(\d+)\s+(\d+)", message.text)
-        self.debug("Reg mesaage: %s" % m)
-        if m:
-            self.debug("chw id: %s  clinic id: %s" % (m.group(1), m.group(2)))
-            message.respond("Thank you for registering")
-        else:
-            message.respond("The correct message fformat is REG CHWID CLINICID")
+        
+        if not m:
+            message.respond("The correct message format is REG CHWID CLINICID")
+            return True
+         
+        received_clinic_id = m.group(2)
+        clinics = Location.objects.filter(code=received_clinic_id)
+        
+        if not clinics:
+            message.respond("Unknown clinic id: %s" % (received_clinic_id))
+            return True
+        
+        clinic = clinics[0]
+        
+        if clinic.type.name == "District" or clinic.type.name == "Province":
+           message.respond("Invalid Clinic id: %s" % (received_clinic_id))
+           return True
+        
+        message.respond("Thank you for registering at %s" % (clinics[0].name))
+        
+        self.debug("chw id: %s  clinic id: %s" % (m.group(1), m.group(2)))
+        self.debug("Reg mesage: %s" % clinics)
+        
+            
+        
         
         return True
         
