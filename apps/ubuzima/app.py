@@ -85,11 +85,46 @@ class App (rapidsms.app.App):
         
         
         return True
+
         
     @keyword("sup (whatever)")
     def supervisor(self, message, notice):
         self.debug("SUP message: %s" % message.text)
+        m = re.search("sup\s+(\d+)\s+(\d+)(.*)", message.text)
+        if not m:
+            message.respond("The correct format message is  SUP SUPID CLINICID or HOSPITALID")
+            return True
+        
+        optional_part = m.group(3)
+        received_clinic_id = m.group(2)
+        
+        m2 = re.search("(fr|eng|rw)", optional_part)
+        
+        if m2:
+            lang = m2.group(1)
+            self.debug("Your prefered language is: %s" % lang)
+            
+        healthUnit = Location.objects.filter(code=received_clinic_id)
+        
+        if not healthUnit:
+            message.respond("Unknown Health unit id: %s" % (received_clinic_id))
+            return True
+        
+        clinic = healthUnit[0]
+        
+        if clinic.type.name == "District" or clinic.type.name == "Province":
+           message.respond("Invalid Health unit id: %s" % (received_clinic_id))
+           return True
+    
+        message.respond("Thank you for registering at %s" % (healthUnit[0].name))
+        
+        self.debug("sup id: %s  clinic id: %s" % (m.group(1), m.group(2)))
+        self.debug("sup message: %s" % healthUnit)
+        
         return True
+
+
+
     
     @keyword("pre (whatever)")
     def pregnancy(self, message, notice):
