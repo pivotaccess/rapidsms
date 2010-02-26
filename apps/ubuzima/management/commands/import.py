@@ -23,6 +23,12 @@ LONGITUDE = 11
 LATITUDE = 10
 PARENT = 17
 
+# indexes in fosa_villages.csv
+VILLAGE_NAME = 1
+VILLAGE_CODE =  0
+VILLAGE_DISTRICT_CODE = 6
+VILLAGE_SECTOR_CODE = 7
+
 class Command(NoArgsCommand):
     
     
@@ -52,6 +58,7 @@ class Command(NoArgsCommand):
         #delete all locations before insertion, 
         #we might change his during production
         Location.objects.all().delete()
+        
         
         rows = list(self._csv("fosa_table.csv"))
         rows = rows[1:]
@@ -165,4 +172,30 @@ class Command(NoArgsCommand):
                 if created:
                     print ". Created Health Centre: %s" %\
                         (healthcentre)
+                        
+            
+                
+        village_rows = list(self._csv("fosa_villages.csv"))
+        
+        
+        village_rows = village_rows[1:]
+        for row in village_rows:
+            if row[VILLAGE_SECTOR_CODE] in self.sectors:
+                parent = self.sectors[row[VILLAGE_SECTOR_CODE]]
+            elif row[VILLAGE_DISTRICT_CODE] in self.districts:
+                parent = self.districts[row[VILLAGE_DISTRICT_CODE]]
+            else:
+                print "Unable to find parent for village: %s" % row[VILLAGE_CODE]
+                continue
+            
+            village, v_created= \
+            self._loc_type("village").locations.get_or_create(
+                parent=parent,
+                name=row[VILLAGE_NAME].capitalize(),
+                code=row[VILLAGE_CODE]
+            )
+            
+            if v_created:
+                print ". Created Village: %s" %  (village)
+                
                 
