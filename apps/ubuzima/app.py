@@ -90,7 +90,7 @@ class App (rapidsms.app.App):
     @keyword("sup (whatever)")
     def supervisor(self, message, notice):
         self.debug("SUP message: %s" % message.text)
-        m = re.search("sup\s+(\d+)\s+(\d+)(.*)", message.text)
+        m = re.search("sup\s+(\d+)\s+(\d+)(.*)", message.text, re.IGNORECASE)
         if not m:
             message.respond("The correct format message is  SUP SUPID CLINICID or HOSPITALID")
             return True

@@ -17,5 +17,15 @@
 	    "type": 1,
 	    "code": "05"
        }
-    }
+    },
+    {
+        "pk": 3,
+        "model": "locations.location",
+        "fields": {
+        "name": "Gashora",
+	    "type": 4,
+	    "code": "05094"
+       }
+   }    
+    
 ]
