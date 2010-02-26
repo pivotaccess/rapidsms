@@ -10,25 +10,33 @@
         "pk": 2,
         "model": "locations.locationtype",
         "fields": {
-            "name": "District"
+            "name": "Sector"
         }
     },
     {
         "pk": 3,
         "model": "locations.locationtype",
         "fields": {
+            "name": "District"
+        }
+    },
+
+    {
+        "pk": 4,
+        "model": "locations.locationtype",
+        "fields": {
             "name": "Hospital"
        }
     },
     {
-        "pk": 4,
+        "pk": 5,
         "model": "locations.locationtype",
         "fields": {
             "name": "Health Centre"
        }
     },
     {
-        "pk": 5,
+        "pk": 6,
         "model": "locations.locationtype",
         "fields": {
             "name": "Village"
