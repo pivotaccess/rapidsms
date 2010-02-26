@@ -4,8 +4,8 @@
         "model": "locations.location",
         "fields": {
             "name": "Biryogo",
-	    "type": 4,
-	    "code": "01001"
+	    "type": 5,
+	    "code": "F01001"
        }
     },
     
@@ -24,7 +24,7 @@
         "fields": {
         "name": "Gashora",
 	    "type": 4,
-	    "code": "05094"
+	    "code": "F05094"
        }
    }    
     

@@ -3,6 +3,7 @@ import rapidsms
 from rapidsms.parsers.keyworder import Keyworder
 import re
 from apps.locations.models import Location
+from apps.ubuzima.models import *
 
 
 class App (rapidsms.app.App):
@@ -62,20 +63,14 @@ class App (rapidsms.app.App):
             lang = m2.group(1)
             self.debug("Your prefered language is: %s" % lang)
         
-        clinics = Location.objects.filter(code=received_clinic_id)
+        clinics = Location.objects.filter(code=fosa_to_code(received_clinic_id))
         
         if not clinics:
             message.respond("Unknown clinic id: %s" % (received_clinic_id))
             return True
         
         clinic = clinics[0]
-        
-        if clinic.type.name == "District" or clinic.type.name == "Province":
-           message.respond("Invalid Clinic id: %s" % (received_clinic_id))
-           return True
-    
-    
-        
+                
         message.respond("Thank you for registering at %s" % (clinics[0].name))
         
         self.debug("chw id: %s  clinic id: %s" % (m.group(1), m.group(2)))
@@ -104,17 +99,14 @@ class App (rapidsms.app.App):
             lang = m2.group(1)
             self.debug("Your prefered language is: %s" % lang)
             
-        healthUnit = Location.objects.filter(code=received_clinic_id)
+        healthUnit = Location.objects.filter(code=fosa_to_code(received_clinic_id))
         
         if not healthUnit:
             message.respond("Unknown Health unit id: %s" % (received_clinic_id))
             return True
         
         clinic = healthUnit[0]
-        
-        if clinic.type.name == "District" or clinic.type.name == "Province":
-           message.respond("Invalid Health unit id: %s" % (received_clinic_id))
-           return True
+
     
         message.respond("Thank you for registering at %s" % (healthUnit[0].name))
         

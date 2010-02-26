@@ -8,7 +8,7 @@ class TestApp (TestScript):
 
     testRegister = """
         2 > reg 10 05
-        2 < Invalid Clinic id: 05
+        2 < Unknown clinic id: 05
 	    1 > reg asdf
         1 < The correct message format is REG CHWID CLINICID
 	    1 > reg 01 01
