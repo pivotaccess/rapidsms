@@ -1,0 +1,246 @@
+[
+    {
+        "pk": 1,
+        "model": "ubuzima.codetype",
+        "fields": {
+            "name": "Birth"
+         }
+    },
+    {
+        "pk": 2,
+        "model": "ubuzima.codetype",
+        "fields": {
+            "name": "Death"
+        }
+    },
+    {
+        "pk": 3,
+        "model": "ubuzima.codetype",
+        "fields": {
+            "name": "Risk"
+        }
+    },
+
+    {
+        "pk": 4,
+        "model": "ubuzima.codetype",
+        "fields": {
+            "name": "Movement"
+       }
+    },
+    {
+        "pk": 1,
+        "model": "ubuzima.actioncode",
+        "fields": {
+            "code": "md",
+	    "description": "Maternal Death",
+            "type": "2"
+       }
+    },
+    
+    {
+        "pk": 2,
+        "model": "ubuzima.actioncode",
+        "fields": {
+            "code": "mc",
+	    "description": "Miscarriage",
+            "type": "2"
+       }
+    },
+    {
+        "pk": 3,
+        "model": "ubuzima.actioncode",
+        "fields": {
+            "code": "cd",
+	    "description": "Child Death",
+            "type": "2"
+       }
+    },
+    {
+        "pk": 4,
+        "model": "ubuzima.actioncode",
+        "fields": {
+            "code": "te",
+	    "description": "Mother at term",
+            "type": "1"
+       }
+    },
+    {
+        "pk": 5,
+        "model": "ubuzima.actioncode",
+        "fields": {
+            "code": "la",
+	    "description": "Mother in labor",
+            "type": "1"
+       }
+    },
+    {
+        "pk": 6,
+        "model": "ubuzima.actioncode",
+        "fields": {
+            "code": "na",
+	    "description": "Has never received clinical antenatal care",
+            "type": "1"
+       }
+    },
+    {
+        "pk": 7,
+        "model": "ubuzima.actioncode",
+        "fields": {
+            "code": "tw",
+	    "description": "Twins",
+            "type": "1"
+       }
+    },
+    {
+        "pk": 8,
+        "model": "ubuzima.actioncode",
+        "fields": {
+            "code": "tr",
+	    "description": "Triplets",
+            "type": "1"
+       }
+    },
+    {
+        "pk": 9,
+        "model": "ubuzima.actioncode",
+        "fields": {
+            "code": "bo",
+	    "description": "Male",
+            "type": "1"
+       }
+    },
+    {
+        "pk": 10,
+        "model": "ubuzima.actioncode",
+        "fields": {
+            "code": "gi",
+	    "description": "Female",
+            "type": "1"
+       }
+    },
+    
+    {
+        "pk": 11,
+        "model": "ubuzima.actioncode",
+        "fields": {
+            "code": "un",
+	    "description": "Perceived serious but cause unknown",
+            "type": "3"
+       }
+    },
+    {
+        "pk": 12,
+        "model": "ubuzima.actioncode",
+        "fields": {
+            "code": "ci",
+	    "description": "Cord infection",
+            "type": "3"
+       }
+    },
+    {
+        "pk": 13,
+        "model": "ubuzima.actioncode",
+        "fields": {
+            "code": "di",
+	    "description": "Diarrhea",
+            "type": "3"
+       }
+    },
+    {
+        "pk": 14,
+        "model": "ubuzima.actioncode",
+        "fields": {
+            "code": "ma",
+	    "description": "Malaria",
+            "type": "3"
+       }
+    },
+    {
+        "pk": 15,
+        "model": "ubuzima.actioncode",
+        "fields": {
+            "code": "fe",
+	    "description": "Fever",
+            "type": "3"
+       }
+    },
+    {
+        "pk": 16,
+        "model": "ubuzima.actioncode",
+        "fields": {
+            "code": "hy",
+	    "description": "Hypothermia",
+            "type": "3"
+       }
+    },
+    {
+        "pk": 17,
+        "model": "ubuzima.actioncode",
+        "fields": {
+            "code": "rb",
+	    "description": "Rapid breathing",
+            "type": "3"
+       }
+    },
+    {
+        "pk": 18,
+        "model": "ubuzima.actioncode",
+        "fields": {
+            "code": "pn",
+	    "description": "Pneumonia",
+            "type": "1"
+       }
+ 
+   },
+   {
+        "pk": 19,
+        "model": "ubuzima.actioncode",
+        "fields": {
+            "code": "he",
+	    "description": "Hemorrhaging/Bleeding",
+            "type": "3"
+       }
+ 
+   },
+   {
+        "pk": 20,
+        "model": "ubuzima.actioncode",
+        "fields": {
+            "code": "hp",
+	    "description": "At hospital facility",
+            "type": "4"
+       }
+ 
+   },
+   {
+        "pk": 21,
+        "model": "ubuzima.actioncode",
+        "fields": {
+            "code": "cl",
+	    "description": "At clinic facility",
+            "type": "4"
+       }
+ 
+   },
+   {
+        "pk": 22,
+        "model": "ubuzima.actioncode",
+        "fields": {
+            "code": "or",
+	    "description": "On route",
+            "type": "4"
+       }
+ 
+   },
+   {
+        "pk": 23,
+        "model": "ubuzima.actioncode",
+        "fields": {
+            "code": "ho",
+	    "description": "At home",
+            "type": "4"
+       }
+ 
+   }
+]

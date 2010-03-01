@@ -4,7 +4,7 @@ from rapidsms.parsers.keyworder import Keyworder
 import re
 from apps.locations.models import Location
 from apps.ubuzima.models import *
-from apps.reporters.models import Reporter
+from apps.reporters.models import *
 
 
 class App (rapidsms.app.App):
@@ -84,9 +84,13 @@ class App (rapidsms.app.App):
         #set the location for this reporter
         message.reporter.location = clinic
         
-        m2 = re.search("(fr|eng|rw)", optional_part)    
+        #set the group for this reporter
+        group = ReporterGroup.objects.get(title='CHW')
+        message.reporter.groups.add(group)
         
-        lang = "kw"
+        m2 = re.search("(fr|en|rw)", optional_part)    
+        
+        lang = "rw"
         if m2:
             lang = m2.group(1)
             self.debug("Your prefered language is: %s" % lang) 
@@ -106,7 +110,11 @@ class App (rapidsms.app.App):
     @keyword("who")
     def who(self, message):
         if (getattr(message, 'reporter', None)):
-            message.respond("You are located at %s, you speak %s" % (message.reporter.location.name, message.reporter.language))
+            if not message.reporter.groups.all():
+                message.respond("You are not in a group, located at %s, you speak %s" % (message.reporter.location.name, message.reporter.language))          
+            else:
+                message.respond("You are a %s, located at %s, you speak %s" % (message.reporter.groups.all()[0].title, message.reporter.location.name, message.reporter.language))
+            
         else:
             message.respond("We don't recognize you")
         return True
@@ -120,14 +128,11 @@ class App (rapidsms.app.App):
             message.respond("The correct format message is  SUP SUPID CLINICID or HOSPITALID")
             return True
         
-        optional_part = m.group(3)
+        received_sup_id = m.group(1)
         received_clinic_id = m.group(2)
+        optional_part = m.group(3)
         
-        m2 = re.search("(fr|eng|rw)", optional_part)
         
-        if m2:
-            lang = m2.group(1)
-            self.debug("Your prefered language is: %s" % lang)
             
         healthUnit = Location.objects.filter(code=fosa_to_code(received_clinic_id))
         
@@ -136,8 +141,35 @@ class App (rapidsms.app.App):
             return True
         
         clinic = healthUnit[0]
-
-    
+        
+        #do we already have a report for our connection?
+        #if so, just update it
+        if not getattr(message, 'reporter', None):
+            rep, created = Reporter.objects.get_or_create(alias=received_sup_id)
+            message.reporter = rep
+            
+        #connect this reporter to the connection
+        message.persistant_connection.reporter = message.reporter
+        message.persistant_connection.save()
+        
+        self.debug("saved connection: %s to reporter: %s" % (message.persistant_connection, message.reporter))
+        
+        #set the location for this reporter
+        message.reporter.location = clinic
+        
+        #set the group for this reporter
+        group = ReporterGroup.objects.get(title='Supervisor')
+        message.reporter.groups.add(group)
+        
+        m2 = re.search("(fr|en|rw)", optional_part)
+        lang = "rw" #the default language
+        
+        if m2:
+            lang = m2.group(1)
+            self.debug("Your prefered language is: %s" % lang)
+        
+        message.reporter.language = lang
+        message.reporter.save()
         message.respond("Thank you for registering at %s" % (healthUnit[0].name))
         
         self.debug("sup id: %s  clinic id: %s" % (m.group(1), m.group(2)))
@@ -151,5 +183,6 @@ class App (rapidsms.app.App):
     @keyword("pre (whatever)")
     def pregnancy(self, message, notice):
         self.debug("PRE message: %s" % message.text)
+        
         return True
         

@@ -6,6 +6,8 @@ import os, csv, decimal
 from django.core.management.base import NoArgsCommand
 from locations.models import * #we are importing model classes from locations app
 from ubuzima.models import *
+from django.core import management
+
 
 IMPORT_DIR = os.path.abspath("apps/ubuzima/import")
 
@@ -65,6 +67,8 @@ class Command(NoArgsCommand):
         #we might change this during production
         Location.objects.all().delete()
         
+        #load location_types fixture
+        management.call_command('loaddata', 'fosa_location_types.json')
         
         rows = list(self._csv("fosa_table.csv"))
 
