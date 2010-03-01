@@ -4,6 +4,7 @@ from rapidsms.parsers.keyworder import Keyworder
 import re
 from apps.locations.models import Location
 from apps.ubuzima.models import *
+from apps.reporters.models import Reporter
 
 
 class App (rapidsms.app.App):
@@ -53,15 +54,12 @@ class App (rapidsms.app.App):
         if not m:
             message.respond("The correct message format is REG CHWID CLINICID")
             return True
-        
-        optional_part = m.group(3)
+        received_chw_id = m.group(1)
         received_clinic_id = m.group(2)
+        optional_part = m.group(3)
         
-        m2 = re.search("(fr|eng|rw)", optional_part)    
-           
-        if m2:
-            lang = m2.group(1)
-            self.debug("Your prefered language is: %s" % lang)
+        
+        
         
         clinics = Location.objects.filter(code=fosa_to_code(received_clinic_id))
         
@@ -70,17 +68,49 @@ class App (rapidsms.app.App):
             return True
         
         clinic = clinics[0]
-                
+         
+        #do we already have a report for our connection?
+        #if so, just update it
+        if not getattr(message, 'reporter', None):
+            rep, created = Reporter.objects.get_or_create(alias=received_chw_id)
+            message.reporter = rep
+            
+        #connect this reporter to the connection
+        message.persistant_connection.reporter = message.reporter
+        message.persistant_connection.save()
+        
+        self.debug("saved connection: %s to reporter: %s" % (message.persistant_connection, message.reporter))
+        
+        #set the location for this reporter
+        message.reporter.location = clinic
+        
+        m2 = re.search("(fr|eng|rw)", optional_part)    
+        
+        lang = "kw"
+        if m2:
+            lang = m2.group(1)
+            self.debug("Your prefered language is: %s" % lang) 
+ 
+            
+        message.reporter.language = lang
+        message.reporter.save()
+        
         message.respond("Thank you for registering at %s" % (clinics[0].name))
         
         self.debug("chw id: %s  clinic id: %s" % (m.group(1), m.group(2)))
         self.debug("Reg mesage: %s" % clinics)
-        
-            
-        
-        
+    
         return True
 
+    
+    @keyword("who")
+    def who(self, message):
+        if (getattr(message, 'reporter', None)):
+            message.respond("You are located at %s, you speak %s" % (message.reporter.location.name, message.reporter.language))
+        else:
+            message.respond("We don't recognize you")
+        return True
+        
         
     @keyword("sup (whatever)")
     def supervisor(self, message, notice):

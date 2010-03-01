@@ -1,8 +1,9 @@
 from rapidsms.tests.scripted import TestScript
 from app import App
+from apps.reporters.app import App as ReporterApp
 
 class TestApp (TestScript):
-    apps = (App,)
+    apps = (App, ReporterApp)
 
     fixtures = ("fosa_location_types", "fosa_test_locations")
 
@@ -15,9 +16,16 @@ class TestApp (TestScript):
         1 < Unknown clinic id: 01
 	    1 > reg 01 01001
 	    1 < Thank you for registering at Biryogo
-        3 > REG 01 01001
+        3 > REG 01 01001 
         3 < Thank you for registering at Biryogo
-           
+	3 > WHO
+	3 < You are located at Biryogo, you speak kw
+	4 > WHO
+	4 < We don't recognize you
+        5 > REG 08 01001 eng
+        5 < Thank you for registering at Biryogo
+        5 > WHO
+	5 < You are located at Biryogo, you speak eng 
         
     """
     
