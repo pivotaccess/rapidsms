@@ -19,5 +19,13 @@
         "fields": {
             "name": "Risk"
         }
+    },
+    {
+        "pk": 4,
+        "model": "ubuzima.reporttype",
+        "fields": {
+            "name": "Pregnancy"
+        }
     }
+
 ]

@@ -39,7 +39,7 @@ class ActionCode(models.Model):
 class Patient(models.Model):
     location = models.ForeignKey(Location)
     national_id = models.CharField(max_length=20, unique=True)
-    dob = models.DateField(blank=True)
+    dob = models.DateField(null=True)
     
     def __unicode__(self):
         return self.national_id

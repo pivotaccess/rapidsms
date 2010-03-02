@@ -5,7 +5,7 @@ from apps.reporters.app import App as ReporterApp
 class TestApp (TestScript):
     apps = (App, ReporterApp)
 
-    fixtures = ("fosa_location_types", "fosa_test_locations", "groups")
+    fixtures = ("fosa_location_types", "fosa_test_locations", "groups", "report_types", "action_codes")
 
     testRegister = """
         2 > reg 10 05
@@ -45,6 +45,32 @@ class TestApp (TestScript):
         3 > SUP 23 048547 fr
         3 < Unknown Health unit id: 048547 
     """
+    
+    testPregnancy = """
+	1 > pre 10003 1982
+       	1 < You need to be registered first
+        1 > REG 08 01001 en
+	1 < Thank you for registering at Biryogo
+	1 > pre 10003 1982
+	1 < Pregnancy report submitted successfully
+        1 > pre 10003 1982 ho ma fe 
+    	1 < Pregnancy report submitted successfully
+	1 > pre 10003 1982 HO MA fe 
+    	1 < Pregnancy report submitted successfully
+	1 > pre 10003 1982 ho xx fe
+    	1 < Error.  Unknown action code: xx
+	1 > pre 10003 1982 ho cl fe 
+    	1 < Error.  You cannot give more than one movement code
+	1 > pre 10003 1982 ho fe cl 
+    	1 < Error.  You cannot give more than one movement code
+	1 > Pre 10003 1982 ho cl fE 
+    	1 < Error.  You cannot give more than one movement code
+	1 > pre 10003 1982 ho cl fe 21 
+    	1 < Error.  More than one movement code and Unknown action code: 21
+	1 > pre 10003 1982 ma cl fe 21 
+    	1 < Error.  Unknown action code: 21
+       
+    """	
 
     # define your test scripts here.
     # e.g.:

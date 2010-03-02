@@ -183,6 +183,99 @@ class App (rapidsms.app.App):
     @keyword("pre (whatever)")
     def pregnancy(self, message, notice):
         self.debug("PRE message: %s" % message.text)
+
+        if not getattr(message, 'reporter', None):
+            message.respond("You need to be registered first")
+            return True
+
+
+        m = re.search("pre\s+(\d+)\s+(\d+)(.*)", message.text, re.IGNORECASE)
+        if not m:
+            message.respond("The correct format message is  PRE PATIENT_ID DATE_BIRTH")
+            return True
+        
+        received_patient_id = m.group(1)
+        date_birth = m.group(2)
+        optional_part = m.group(3)
+
+        # get or create the patient
+        patient, created = Patient.objects.get_or_create(national_id=received_patient_id,\
+        location=message.reporter.location)
+        
+                
+        # create our report
+        report_type = ReportType.objects.get(name='Pregnancy')
+        report = Report(patient=patient, reporter=message.reporter, type=report_type)
+        
+        
+        # add our action codes to the report
+
+        codes = optional_part.split()
+        action_codes = []
+        num_mov_codes = 0
+        invalid_codes = []
+        
+        for code in codes:
+            print "code: %s" % code
+            try:
+                action_code = ActionCode.objects.get(code=code)
+                action_codes.append(action_code)
+                
+                # if the action code is a movement code, increment our counter
+                if action_code.type.id == 4:
+                    num_mov_codes += 1
+                   
+                                               
+            except ActionCode.DoesNotExist:
+                 invalid_codes.append(code)
+
+#        #in case an unknown action code is received  and more than one movement code     
+#        if len(invalid_codes)>0 and num_mov_codes>1:
+#            message.respond("Error.  More than one movement code and Unknown action code: %s" % ", ".join(invalid_codes))   
+#            return True
+#               
+#        #in case an unknown action code is received       
+#        if len(invalid_codes) > 0:
+#            message.respond("Error.  Unknown action code: %s" % ", ".join(invalid_codes))   
+#            return True
+#        
+#        # error out if there is more than one movement code    
+#        if num_mov_codes > 1:
+#            message.respond("Error.  You cannot give more than one movement code")
+#            return True
+        
+        
+        error_msg = ""
+        if len(invalid_codes) > 0:
+            error_msg += "Error.  Unknown action code: %s.  " % ", ".join(invalid_codes)
+            
+        if num_mov_codes > 1:
+            error_msg += "Error.  You cannot give more than one movement code"
+        
+        if error_msg:
+            message.respond("Error.  %s" % error_msg)
+            return True
+        
+        # save the report
+        report.save()
+        
+        # then associate all the action codes with it
+        for action_code in action_codes:
+            report.action_codes.add(action_code)            
+            
+        message.respond("Pregnancy report submitted successfully")
         
         return True
+            
+
+
+
+
+
+
+
+
+
+
+
         
