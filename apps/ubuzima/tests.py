@@ -5,7 +5,7 @@ from apps.reporters.app import App as ReporterApp
 class TestApp (TestScript):
     apps = (App, ReporterApp)
 
-    fixtures = ("fosa_location_types", "fosa_test_locations")
+    fixtures = ("fosa_location_types", "fosa_test_locations", "groups")
 
     testRegister = """
         2 > reg 10 05
@@ -14,24 +14,32 @@ class TestApp (TestScript):
         1 < The correct message format is REG CHWID CLINICID
 	    1 > reg 01 01
         1 < Unknown clinic id: 01
-	    1 > reg 01 01001
-	    1 < Thank you for registering at Biryogo
+	1 > reg 01 01001
+	1 < Thank you for registering at Biryogo
         3 > REG 01 01001 
         3 < Thank you for registering at Biryogo
+
+	#testing the default language
 	3 > WHO
-	3 < You are located at Biryogo, you speak kw
-	4 > WHO
+	3 < You are a CHW, located at Biryogo, you speak rw
+	
+        4 > WHO
 	4 < We don't recognize you
-        5 > REG 08 01001 eng
+        5 > REG 08 01001 en
         5 < Thank you for registering at Biryogo
         5 > WHO
-	5 < You are located at Biryogo, you speak eng 
+	5 < You are a CHW, located at Biryogo, you speak en
         
     """
     
     testSupervisor = """
         1 > sup 23 05094 en    
         1 < Thank you for registering at Gashora 
+	4 > WHO
+        4 < We don't recognize you
+	1 > who   
+	1 < You are a Supervisor, located at Gashora, you speak en
+
         2 > sup 34 048547 fr
         2 < Unknown Health unit id: 048547
         3 > SUP 23 048547 fr
