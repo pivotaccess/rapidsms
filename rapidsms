@@ -4,8 +4,10 @@
 import sys, os
 from os import path
 
+script_loc = os.path.abspath(os.path.dirname(sys.argv[0]))
+
 # figure out where all the extra libs (rapidsms and contribs) are
-libs=[os.path.abspath('lib'),os.path.abspath('apps')] # main 'rapidsms/lib'
+libs=[path.join(script_loc, 'lib'), path.join(script_loc, 'apps')] # main 'rapidsms/lib'
 try:
     for f in os.listdir('contrib'):
         pkg = path.join('contrib',f)
