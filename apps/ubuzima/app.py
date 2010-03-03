@@ -5,7 +5,8 @@ import re
 from apps.locations.models import Location
 from apps.ubuzima.models import *
 from apps.reporters.models import *
-
+from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import activate
 
 class App (rapidsms.app.App):
     
@@ -22,6 +23,12 @@ class App (rapidsms.app.App):
     def handle (self, message):
         """Add your main application logic in the handle phase."""
         results = self.keyword.match(self, message.text)
+        
+        # do we know this reporter?
+        if getattr(message, 'reporter', None):
+            activate(message.reporter.language)
+        else:
+            activate('rw')
         
         if results:
             func, captures = results
@@ -111,12 +118,14 @@ class App (rapidsms.app.App):
     def who(self, message):
         if (getattr(message, 'reporter', None)):
             if not message.reporter.groups.all():
-                message.respond("You are not in a group, located at %s, you speak %s" % (message.reporter.location.name, message.reporter.language))          
+                message.respond(_("You are not in a group, located at %(location)s, you speak %(language)s") % \
+                    { 'location': message.reporter.location.name, 'language': message.reporter.language} )          
             else:
-                message.respond("You are a %s, located at %s, you speak %s" % (message.reporter.groups.all()[0].title, message.reporter.location.name, message.reporter.language))
+                message.respond(_("You are a %(group)s, located at %(location)s, you speak %(language)s") % \
+                    { 'group': message.reporter.groups.all()[0].title, 'location': message.reporter.location.name, 'language': message.reporter.language} )
             
         else:
-            message.respond("We don't recognize you")
+            message.respond(_("We don't recognize you"))
         return True
         
         
