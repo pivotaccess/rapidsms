@@ -28,7 +28,7 @@ class App (rapidsms.app.App):
             return func(self, message, *captures)
         else:
             self.debug("NO MATCH FOR %s" % message.text)
-            message.respond("We don't recogniz this messge")
+            message.respond("We don't recogniz this message")
             return True
     
     def cleanup (self, message):
@@ -45,7 +45,7 @@ class App (rapidsms.app.App):
         pass
 
 
-    @keyword("reg (whatever)")
+    @keyword("reg(.*)")
     def register(self, message, notice):
         self.debug("REG message: %s" % message.text)
         m = re.search("reg\s+(\d+)\s+(\d+)(.*)", message.text, re.IGNORECASE)
@@ -120,7 +120,7 @@ class App (rapidsms.app.App):
         return True
         
         
-    @keyword("sup (whatever)")
+    @keyword("sup(.*)")
     def supervisor(self, message, notice):
         self.debug("SUP message: %s" % message.text)
         m = re.search("sup\s+(\d+)\s+(\d+)(.*)", message.text, re.IGNORECASE)
@@ -180,7 +180,7 @@ class App (rapidsms.app.App):
 
 
     
-    @keyword("pre (whatever)")
+    @keyword("pre(.*)")
     def pregnancy(self, message, notice):
         self.debug("PRE message: %s" % message.text)
 
@@ -247,6 +247,81 @@ class App (rapidsms.app.App):
         
         error_msg = ""
         if len(invalid_codes) > 0:
+            error_msg += "Unknown action code: %s.  " % ", ".join(invalid_codes)
+            
+        if num_mov_codes > 1:
+            error_msg += "You cannot give more than one movement code"
+        
+        if error_msg:
+            message.respond("Error.  %s" % error_msg)
+            return True
+        
+        # save the report
+        report.save()
+        
+        # then associate all the action codes with it
+        for action_code in action_codes:
+            report.action_codes.add(action_code)            
+            
+        message.respond("Pregnancy report submitted successfully")
+        
+        return True
+    
+    @keyword("risk(.*)")
+    def risk(self, message, notice):
+        self.debug("RISK message: %s" % message.text)
+        
+        if not getattr(message, 'reporter', None):
+            message.respond("Get registered first")
+            return True
+            
+        m = re.search("risk\s+(\d+)(.*)", message.text, re.IGNORECASE)
+        if not m:
+            message.respond("The correct format message is  RISK PATIENT_ID")
+            return True
+        received_patient_id = m.group(1)
+        optional_part = m.group(2)
+        
+        # Create the report and link the particular patient to the report
+        # in case patient have never been registered, report Pregnancy first
+        try:
+            patient = Patient.objects.get(national_id=received_patient_id)
+                        
+        except Patient.DoesNotExist:
+            message.respond("Always report Pregnancy before any risk report to a patient")
+            return True
+
+        report_type = ReportType.objects.get(name='Risk')
+        report = Report(patient=patient, reporter=message.reporter, type=report_type)
+        
+        # Line below may be needed in case Risk reports are sent without previous Pregnancy reports
+        location = message.reporter.location
+        
+        
+        # add our action codes to the report
+
+        codes = optional_part.split()
+        action_codes = []
+        num_mov_codes = 0
+        invalid_codes = []
+        
+        for code in codes:
+            print "code: %s" % code
+            try:
+                action_code = ActionCode.objects.get(code=code)
+                action_codes.append(action_code)
+                
+                # if the action code is a movement code, increment our counter
+                if action_code.type.id == 4:
+                    num_mov_codes += 1
+                   
+                                               
+            except ActionCode.DoesNotExist:
+                 invalid_codes.append(code)
+
+
+        error_msg = ""
+        if len(invalid_codes) > 0:
             error_msg += "Error.  Unknown action code: %s.  " % ", ".join(invalid_codes)
             
         if num_mov_codes > 1:
@@ -263,19 +338,6 @@ class App (rapidsms.app.App):
         for action_code in action_codes:
             report.action_codes.add(action_code)            
             
-        message.respond("Pregnancy report submitted successfully")
+        message.respond("Thank you! Risk report submitted")
         
         return True
-            
-
-
-
-
-
-
-
-
-
-
-
-        

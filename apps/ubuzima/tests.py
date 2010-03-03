@@ -10,35 +10,35 @@ class TestApp (TestScript):
     testRegister = """
         2 > reg 10 05
         2 < Unknown clinic id: 05
-	    1 > reg asdf
+        1 > reg asdf
         1 < The correct message format is REG CHWID CLINICID
-	    1 > reg 01 01
+        1 > reg 01 01
         1 < Unknown clinic id: 01
-	1 > reg 01 01001
-	1 < Thank you for registering at Biryogo
+        1 > reg 01 01001
+        1 < Thank you for registering at Biryogo
         3 > REG 01 01001 
         3 < Thank you for registering at Biryogo
 
-	#testing the default language
-	3 > WHO
-	3 < You are a CHW, located at Biryogo, you speak rw
-	
+        #testing the default language
+        3 > WHO
+        3 < You are a CHW, located at Biryogo, you speak rw
+
         4 > WHO
-	4 < We don't recognize you
+        4 < We don't recognize you
         5 > REG 08 01001 en
         5 < Thank you for registering at Biryogo
         5 > WHO
-	5 < You are a CHW, located at Biryogo, you speak en
-        
+        5 < You are a CHW, located at Biryogo, you speak en
+    
     """
     
     testSupervisor = """
         1 > sup 23 05094 en    
         1 < Thank you for registering at Gashora 
-	4 > WHO
+        4 > WHO
         4 < We don't recognize you
-	1 > who   
-	1 < You are a Supervisor, located at Gashora, you speak en
+        1 > who   
+        1 < You are a Supervisor, located at Gashora, you speak en
 
         2 > sup 34 048547 fr
         2 < Unknown Health unit id: 048547
@@ -47,28 +47,62 @@ class TestApp (TestScript):
     """
     
     testPregnancy = """
-	1 > pre 10003 1982
-       	1 < You need to be registered first
+        1 > pre 10003 1982
+        1 < You need to be registered first
         1 > REG 08 01001 en
-	1 < Thank you for registering at Biryogo
-	1 > pre 10003 1982
-	1 < Pregnancy report submitted successfully
+        1 < Thank you for registering at Biryogo
+        1 > pre 10003 1982
+        1 < Pregnancy report submitted successfully
         1 > pre 10003 1982 ho ma fe 
-    	1 < Pregnancy report submitted successfully
-	1 > pre 10003 1982 HO MA fe 
-    	1 < Pregnancy report submitted successfully
-	1 > pre 10003 1982 ho xx fe
-    	1 < Error.  Unknown action code: xx
-	1 > pre 10003 1982 ho cl fe 
-    	1 < Error.  You cannot give more than one movement code
-	1 > pre 10003 1982 ho fe cl 
-    	1 < Error.  You cannot give more than one movement code
-	1 > Pre 10003 1982 ho cl fE 
-    	1 < Error.  You cannot give more than one movement code
-	1 > pre 10003 1982 ho cl fe 21 
-    	1 < Error.  More than one movement code and Unknown action code: 21
-	1 > pre 10003 1982 ma cl fe 21 
-    	1 < Error.  Unknown action code: 21
+        1 < Pregnancy report submitted successfully
+        1 > pre 10003 1982 HO MA fe 
+        1 < Pregnancy report submitted successfully
+        1 > pre 10003 1982 ho xx fe
+        1 < Error.  Unknown action code: xx.
+        1 > pre 10003 1982 ho cl fe 
+        1 < Error.  You cannot give more than one movement code
+        1 > pre 10003 1982 ho fe cl 
+        1 < Error.  You cannot give more than one movement code
+        1 > Pre 10003 1982 ho cl fE 
+        1 < Error.  You cannot give more than one movement code
+        1 > pre 10003 1982 ho cl fe 21 
+        1 < Error.  Unknown action code: 21.  You cannot give more than one movement code
+        1 > pre 10003 1982 ma cl fe 21 
+        1 < Error.  Unknown action code: 21.
+        1 > pre
+        1 < Error.  Unknown action code: 21.
+                
+       
+    """	
+    
+    testRisk = """
+        1 > risk 10003 ho
+        1 < Get registered first
+        1 > pre 10003 1982
+        1 < You need to be registered first
+        1 > REG 08 01001 en
+        1 < Thank you for registering at Biryogo        
+        1 > pre 10003 1982
+        1 < Pregnancy report submitted successfully
+        1 > risk 10003 ho
+        1 < Thank you! Risk report submitted
+        
+        2 > risk 1000 ho fe ma
+        2 < Get registered first
+        2 > REG 08 01001 en
+        2 < Thank you for registering at Biryogo
+        2 > risk 1000 ho fe ma
+        2 < Always report Pregnancy before any risk report to a patient
+        
+        3 > risk 1000 ho fe ma
+        3 < Get registered first
+        3 > REG 08 01001 en
+        3 < Thank you for registering at Biryogo
+        3 > risk
+        3 < Always report Pregnancy before any risk report to a patient
+        
+        
+
        
     """	
 
