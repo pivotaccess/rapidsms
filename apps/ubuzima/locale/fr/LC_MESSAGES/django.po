@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-03-03 15:53+0200\n"
+"POT-Creation-Date: 2010-03-03 16:13+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,16 +16,16 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: app.py:115
+#: app.py:123
 #, python-format
 msgid "You are not in a group, located at %(location)s, you speak %(language)s"
 msgstr ""
 
-#: app.py:118
+#: app.py:126
 #, python-format
 msgid "You are a %(group)s, located at %(location)s, you speak %(language)s"
 msgstr "Vous etes un %(group)s, a %(location)s, vouz parlez %(language)s"
 
-#: app.py:122
+#: app.py:130
 msgid "We don't recognize you"
 msgstr ""

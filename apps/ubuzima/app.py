@@ -106,6 +106,8 @@ class App (rapidsms.app.App):
         message.reporter.language = lang
         message.reporter.save()
         
+        activate(lang)
+        
         message.respond("Thank you for registering at %s" % (clinics[0].name))
         
         self.debug("chw id: %s  clinic id: %s" % (m.group(1), m.group(2)))
