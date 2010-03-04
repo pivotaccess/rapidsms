@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-03-03 16:13+0200\n"
+"POT-Creation-Date: 2010-03-04 10:01+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,16 +16,108 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: app.py:123
+#: app.py:38
+#, fuzzy
+msgid "We don't recogniz this message"
+msgstr "Ce message est invalid, Veuillez reesayer"
+
+#: app.py:62
+#, fuzzy
+msgid "(The correct message format is REG CHWID CLINICID"
+msgstr "Erreur. Le format du message est REG CHWID CLINICID"
+
+#: app.py:74
+#, python-format
+msgid "Unknown clinic id: %(clinic)s"
+msgstr "Clinique %(clinic)s non connu"
+
+#: app.py:112
+#, python-format
+msgid "Thank you for registering at %(clinic)s"
+msgstr "Nous vous remercions de vous etre enregistrer a la clinique %(clinic)s"
+
+#: app.py:125
 #, python-format
 msgid "You are not in a group, located at %(location)s, you speak %(language)s"
-msgstr ""
+msgstr "Vous n appartenez pas a ce groupe situe a  %(location)s bien que vous parliez %(language)s"
 
-#: app.py:126
+#: app.py:128
 #, python-format
 msgid "You are a %(group)s, located at %(location)s, you speak %(language)s"
 msgstr "Vous etes un %(group)s, a %(location)s, vouz parlez %(language)s"
 
-#: app.py:130
+#: app.py:132
 msgid "We don't recognize you"
-msgstr ""
+msgstr "Ce message est invalid, Veuillez reesayer"
+
+#: app.py:141
+msgid "The correct format message is  SUP SUPID CLINICID or HOSPITALID"
+msgstr "Le format approprie du message est SUP SUPID CLINICID or HOSPITALID"
+
+#: app.py:153
+#, python-format
+msgid "Unknown Health unit id: %(clinic)s"
+msgstr "Erreur. L' identite de la clinique ou de l hopital %(clinic)s n est pas reconnu."
+
+#: app.py:190
+#, fuzzy, python-format
+msgid "Thank you for registering at %s(Health unit)"
+msgstr "Nous vous remercions de vous etre enregistrer a la clinique %(clinic)s"
+
+#: app.py:206
+msgid "You need to be registered first"
+msgstr "Vous n etes pas encore enregistrer Mr l'agent de sante"
+
+#: app.py:212
+msgid "The correct format message is  PRE PATIENT_ID DATE_BIRTH"
+msgstr "Erreur. Le format du message est PRE PATIENT_ID DATE_BIRTH"
+
+#: app.py:268
+#, fuzzy, python-format
+msgid "Unknown action code: %s.  "
+msgstr "Erreur. Code pour action inconnu: "
+
+#: app.py:271
+msgid "You cannot give more than one movement code"
+msgstr "Vous ne pouvez que donner un seul code pour le mouvement"
+
+#: app.py:274 app.py:350
+#, python-format
+msgid "Error.  %(error)s"
+msgstr "Erreur. %(error)s"
+
+#: app.py:285
+msgid "Pregnancy report submitted successfully"
+msgstr "La grossessea ete enregistre avec succes"
+
+#: app.py:294
+#, fuzzy
+msgid "Get registered first"
+msgstr "Vous n etes pas encore enregistrer Mr l'agent de sante"
+
+#: app.py:299
+#, fuzzy
+msgid "The correct format message is  RISK PATIENT_ID"
+msgstr "Erreur. Le format du message est PRE PATIENT_ID DATE_BIRTH"
+
+#: app.py:310
+msgid "Always report Pregnancy before any risk report to a patient"
+msgstr "Signalez une grossesse avant tout rapport de Risque"
+
+#: app.py:344
+#, fuzzy, python-format
+msgid "Error.  Unknown action code: %s.  "
+msgstr "Erreur. Code pour action inconnu: "
+
+#: app.py:347
+#, fuzzy
+msgid "Error.  You cannot give more than one movement code"
+msgstr "Vous ne pouvez que donner un seul code pour le mouvement"
+
+#: app.py:361
+msgid "Thank you! Risk report submitted"
+msgstr "Merci. Vous venez de nous signaler un Risque"
+
+#, fuzzy
+#~ msgid "Error.  %s"
+#~ msgstr "Erreur. %(error)s"

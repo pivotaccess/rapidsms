@@ -70,7 +70,7 @@ class TestApp (TestScript):
         1 > pre 10003 1982 ma cl fe 21 
         1 < Error.  Unknown action code: 21.
         1 > pre
-        1 < Error.  Unknown action code: 21.
+        1 < The correct format message is  PRE PATIENT_ID DATE_BIRTH
                 
        
     """	
@@ -99,7 +99,10 @@ class TestApp (TestScript):
         3 > REG 08 01001 en
         3 < Thank you for registering at Biryogo
         3 > risk
-        3 < Always report Pregnancy before any risk report to a patient
+        3 < The correct format message is  RISK PATIENT_ID
+        
+        4 > risk 10004 ho
+        4 < Get registered first
         
         
 

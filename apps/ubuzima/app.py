@@ -5,7 +5,7 @@ import re
 from apps.locations.models import Location
 from apps.ubuzima.models import *
 from apps.reporters.models import *
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ugettext as _
 from django.utils.translation import activate
 
 class App (rapidsms.app.App):
@@ -35,7 +35,7 @@ class App (rapidsms.app.App):
             return func(self, message, *captures)
         else:
             self.debug("NO MATCH FOR %s" % message.text)
-            message.respond("We don't recogniz this message")
+            message.respond(_("We don't recogniz this message"))
             return True
     
     def cleanup (self, message):
@@ -52,14 +52,14 @@ class App (rapidsms.app.App):
         pass
 
 
-    @keyword("reg(.*)")
+    @keyword("\s*reg(.*)")
     def register(self, message, notice):
         self.debug("REG message: %s" % message.text)
         m = re.search("reg\s+(\d+)\s+(\d+)(.*)", message.text, re.IGNORECASE)
              
         
         if not m:
-            message.respond("The correct message format is REG CHWID CLINICID")
+            message.respond(_("The correct message format is REG CHWID CLINICID"))
             return True
         received_chw_id = m.group(1)
         received_clinic_id = m.group(2)
@@ -71,7 +71,8 @@ class App (rapidsms.app.App):
         clinics = Location.objects.filter(code=fosa_to_code(received_clinic_id))
         
         if not clinics:
-            message.respond("Unknown clinic id: %s" % (received_clinic_id))
+            message.respond(_("Unknown clinic id: %(clinic)s") % \
+            { 'clinic': received_clinic_id })
             return True
         
         clinic = clinics[0]
@@ -108,7 +109,8 @@ class App (rapidsms.app.App):
         
         activate(lang)
         
-        message.respond("Thank you for registering at %s" % (clinics[0].name))
+        message.respond(_("Thank you for registering at %(clinic)s") % \
+        { 'clinic':clinics[0].name })
         
         self.debug("chw id: %s  clinic id: %s" % (m.group(1), m.group(2)))
         self.debug("Reg mesage: %s" % clinics)
@@ -116,7 +118,7 @@ class App (rapidsms.app.App):
         return True
 
     
-    @keyword("who")
+    @keyword("\s*who")
     def who(self, message):
         if (getattr(message, 'reporter', None)):
             if not message.reporter.groups.all():
@@ -131,12 +133,12 @@ class App (rapidsms.app.App):
         return True
         
         
-    @keyword("sup(.*)")
+    @keyword("\s*sup(.*)")
     def supervisor(self, message, notice):
         self.debug("SUP message: %s" % message.text)
         m = re.search("sup\s+(\d+)\s+(\d+)(.*)", message.text, re.IGNORECASE)
         if not m:
-            message.respond("The correct format message is  SUP SUPID CLINICID or HOSPITALID")
+            message.respond(_("The correct format message is  SUP SUPID CLINICID or HOSPITALID"))
             return True
         
         received_sup_id = m.group(1)
@@ -145,13 +147,14 @@ class App (rapidsms.app.App):
         
         
             
-        healthUnit = Location.objects.filter(code=fosa_to_code(received_clinic_id))
+        clinic = Location.objects.filter(code=fosa_to_code(received_clinic_id))
         
-        if not healthUnit:
-            message.respond("Unknown Health unit id: %s" % (received_clinic_id))
+        if not clinic:
+            message.respond(_("Unknown Health unit id: %(clinic)s") % \
+            { "clinic": received_clinic_id})
             return True
         
-        clinic = healthUnit[0]
+        clinic = clinic[0]
         
         #do we already have a report for our connection?
         #if so, just update it
@@ -181,28 +184,32 @@ class App (rapidsms.app.App):
         
         message.reporter.language = lang
         message.reporter.save()
-        message.respond("Thank you for registering at %s" % (healthUnit[0].name))
+
+        activate(lang)
+        
+        message.respond(_("Thank you for registering at %(clinic)s") % \
+        { 'clinic': clinic.name } )
         
         self.debug("sup id: %s  clinic id: %s" % (m.group(1), m.group(2)))
-        self.debug("sup message: %s" % healthUnit)
+        self.debug("sup message: %s" % clinic)
         
         return True
 
 
 
     
-    @keyword("pre(.*)")
+    @keyword("\s*pre(.*)")
     def pregnancy(self, message, notice):
         self.debug("PRE message: %s" % message.text)
 
         if not getattr(message, 'reporter', None):
-            message.respond("You need to be registered first")
+            message.respond(_("You need to be registered first"))
             return True
 
 
         m = re.search("pre\s+(\d+)\s+(\d+)(.*)", message.text, re.IGNORECASE)
         if not m:
-            message.respond("The correct format message is  PRE PATIENT_ID DATE_BIRTH")
+            message.respond(_("The correct format message is  PRE PATIENT_ID DATE_BIRTH"))
             return True
         
         received_patient_id = m.group(1)
@@ -227,7 +234,7 @@ class App (rapidsms.app.App):
         invalid_codes = []
         
         for code in codes:
-            print "code: %s" % code
+#            print "code: %s" % code
             try:
                 action_code = ActionCode.objects.get(code=code)
                 action_codes.append(action_code)
@@ -240,14 +247,14 @@ class App (rapidsms.app.App):
             except ActionCode.DoesNotExist:
                  invalid_codes.append(code)
 
-#        #in case an unknown action code is received  and more than one movement code     
+#        #in case an unknown action code is received  and more than one movement code
 #        if len(invalid_codes)>0 and num_mov_codes>1:
 #            message.respond("Error.  More than one movement code and Unknown action code: %s" % ", ".join(invalid_codes))   
 #            return True
 #               
-#        #in case an unknown action code is received       
+#        #in case an unknown action code is received
 #        if len(invalid_codes) > 0:
-#            message.respond("Error.  Unknown action code: %s" % ", ".join(invalid_codes))   
+#            message.respond("Error.  Unknown action code: %s" % ", ".join(invalid_codes))
 #            return True
 #        
 #        # error out if there is more than one movement code    
@@ -258,13 +265,15 @@ class App (rapidsms.app.App):
         
         error_msg = ""
         if len(invalid_codes) > 0:
-            error_msg += "Unknown action code: %s.  " % ", ".join(invalid_codes)
+            error_msg += _("Unknown action code: %(invalidcode)s.  ") % \
+            { 'invalidcode':  ", ".join(invalid_codes)}
             
         if num_mov_codes > 1:
-            error_msg += "You cannot give more than one movement code"
+            error_msg += unicode(_("You cannot give more than one movement code"))
         
         if error_msg:
-            message.respond("Error.  %s" % error_msg)
+            message.respond(_("Error.  %(error)s") % \
+            { 'error': error_msg })
             return True
         
         # save the report
@@ -274,21 +283,21 @@ class App (rapidsms.app.App):
         for action_code in action_codes:
             report.action_codes.add(action_code)            
             
-        message.respond("Pregnancy report submitted successfully")
+        message.respond(_("Pregnancy report submitted successfully"))
         
         return True
     
-    @keyword("risk(.*)")
+    @keyword("\s*risk(.*)")
     def risk(self, message, notice):
         self.debug("RISK message: %s" % message.text)
         
         if not getattr(message, 'reporter', None):
-            message.respond("Get registered first")
+            message.respond(_("Get registered first"))
             return True
             
         m = re.search("risk\s+(\d+)(.*)", message.text, re.IGNORECASE)
         if not m:
-            message.respond("The correct format message is  RISK PATIENT_ID")
+            message.respond(_("The correct format message is  RISK PATIENT_ID"))
             return True
         received_patient_id = m.group(1)
         optional_part = m.group(2)
@@ -299,7 +308,7 @@ class App (rapidsms.app.App):
             patient = Patient.objects.get(national_id=received_patient_id)
                         
         except Patient.DoesNotExist:
-            message.respond("Always report Pregnancy before any risk report to a patient")
+            message.respond(_("Always report Pregnancy before any risk report to a patient"))
             return True
 
         report_type = ReportType.objects.get(name='Risk')
@@ -317,7 +326,7 @@ class App (rapidsms.app.App):
         invalid_codes = []
         
         for code in codes:
-            print "code: %s" % code
+#            print "code: %s" % code
             try:
                 action_code = ActionCode.objects.get(code=code)
                 action_codes.append(action_code)
@@ -333,13 +342,14 @@ class App (rapidsms.app.App):
 
         error_msg = ""
         if len(invalid_codes) > 0:
-            error_msg += "Error.  Unknown action code: %s.  " % ", ".join(invalid_codes)
+            error_msg += _("Unknown action code: %s.  ") % ", ".join(invalid_codes)
             
         if num_mov_codes > 1:
-            error_msg += "Error.  You cannot give more than one movement code"
+            error_msg += _("You cannot give more than one movement code")
         
         if error_msg:
-            message.respond("Error.  %s" % error_msg)
+            message.respond(_("Error.  %(error)s") % \
+            { 'error': error_msg })
             return True
         
         # save the report
@@ -349,6 +359,6 @@ class App (rapidsms.app.App):
         for action_code in action_codes:
             report.action_codes.add(action_code)            
             
-        message.respond("Thank you! Risk report submitted")
+        message.respond(_("Thank you! Risk report submitted"))
         
         return True

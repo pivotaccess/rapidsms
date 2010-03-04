@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-03-03 16:13+0200\n"
+"POT-Creation-Date: 2010-03-04 10:01+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,16 +16,99 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: app.py:123
+#: app.py:38
+msgid "We don't recogniz this message"
+msgstr ""
+
+#: app.py:62
+msgid "(The correct message format is REG CHWID CLINICID"
+msgstr ""
+
+#: app.py:74
+#, python-format
+msgid "Unknown clinic id: %(clinic)s"
+msgstr ""
+
+#: app.py:112
+#, python-format
+msgid "Thank you for registering at %(clinic)s"
+msgstr ""
+
+#: app.py:125
 #, python-format
 msgid "You are not in a group, located at %(location)s, you speak %(language)s"
 msgstr ""
 
-#: app.py:126
+#: app.py:128
 #, python-format
 msgid "You are a %(group)s, located at %(location)s, you speak %(language)s"
 msgstr ""
 
-#: app.py:130
+#: app.py:132
 msgid "We don't recognize you"
+msgstr ""
+
+#: app.py:141
+msgid "The correct format message is  SUP SUPID CLINICID or HOSPITALID"
+msgstr ""
+
+#: app.py:153
+#, python-format
+msgid "Unknown Health unit id: %(clinic)s"
+msgstr ""
+
+#: app.py:190
+#, python-format
+msgid "Thank you for registering at %s(Health unit)"
+msgstr ""
+
+#: app.py:206
+msgid "You need to be registered first"
+msgstr ""
+
+#: app.py:212
+msgid "The correct format message is  PRE PATIENT_ID DATE_BIRTH"
+msgstr ""
+
+#: app.py:268
+#, python-format
+msgid "Unknown action code: %s.  "
+msgstr ""
+
+#: app.py:271
+msgid "You cannot give more than one movement code"
+msgstr ""
+
+#: app.py:274 app.py:350
+#, python-format
+msgid "Error.  %(error)s"
+msgstr ""
+
+#: app.py:285
+msgid "Pregnancy report submitted successfully"
+msgstr ""
+
+#: app.py:294
+msgid "Get registered first"
+msgstr ""
+
+#: app.py:299
+msgid "The correct format message is  RISK PATIENT_ID"
+msgstr ""
+
+#: app.py:310
+msgid "Always report Pregnancy before any risk report to a patient"
+msgstr ""
+
+#: app.py:344
+#, python-format
+msgid "Error.  Unknown action code: %s.  "
+msgstr ""
+
+#: app.py:347
+msgid "Error.  You cannot give more than one movement code"
+msgstr ""
+
+#: app.py:361
+msgid "Thank you! Risk report submitted"
 msgstr ""
