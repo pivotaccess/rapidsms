@@ -15,7 +15,7 @@ def code_to_fosa(code):
     return code[1:]
 
 
-class CodeType(models.Model):
+class FieldCategory(models.Model):
     name = models.CharField(max_length=30, unique=True)
     
     def __unicode__(self):
@@ -28,13 +28,14 @@ class ReportType(models.Model):
     def __unicode__(self):
         return self.name   
 
-class ActionCode(models.Model):
-    code = models.CharField(max_length=4, unique=True)
+class FieldType(models.Model):
+    key = models.CharField(max_length=4, unique=True)
     description = models.TextField(blank=True)
-    type = models.ForeignKey(CodeType)
+    category = models.ForeignKey(FieldCategory)
+    has_value = models.BooleanField(default=False)
 
     def __unicode__(self):
-        return self.code
+        return self.key
     
 class Patient(models.Model):
     location = models.ForeignKey(Location)
@@ -44,11 +45,24 @@ class Patient(models.Model):
     def __unicode__(self):
         return self.national_id
     
+    
+class Field(models.Model):
+    type = models.ForeignKey(FieldType)
+    value = models.DecimalField(max_digits=10, decimal_places=10, null=True)
+    
+    def __unicode__(self):
+        if self.value:
+            return "%s=%d" % (self.type.key, self.value)
+        else:
+            return "%s" % self.type.key
+    
 class Report(models.Model):
     reporter = models.ForeignKey(Reporter)
-    action_codes = models.ManyToManyField(ActionCode)
+    fields = models.ManyToManyField(Field)
     patient = models.ForeignKey(Patient)
     type = models.ForeignKey(ReportType)
     
     def __unicode__(self):
-        return "Report id: %d type: %s patient: %s" % (self.pk, self.type.name, self.patient.national_id) 
+        return "Report id: %d type: %s patient: %s" % (self.pk, self.type.name, self.patient.national_id)
+    
+    

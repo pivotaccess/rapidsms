@@ -120,7 +120,7 @@ class App (rapidsms.app.App):
     
     @keyword("\s*who")
     def who(self, message):
-        if (getattr(message, 'reporter', None)):
+        if getattr(message, 'reporter', None):
             if not message.reporter.groups.all():
                 message.respond(_("You are not in a group, located at %(location)s, you speak %(language)s") % \
                     { 'location': message.reporter.location.name, 'language': message.reporter.language} )          
@@ -131,7 +131,29 @@ class App (rapidsms.app.App):
         else:
             message.respond(_("We don't recognize you"))
         return True
+    
+    @keyword("\s*last")
+    def last(self, message):
+        if not getattr(message, 'reporter', None):
+            message.respond("We dont recognize you, register first.")
+            return True
+    
+        reports = Report.objects.filter(reporter=message.reporter).order_by('-pk')
+    
+        if not reports:
+            message.respond("you have not yet sent any report")
+            return True
+    
+        report = reports[0]
         
+        fields = []
+        for field in report.fields.all():
+            fields.append(unicode(field))
+        
+        message.respond("type: %s patient: %s fields: %s" %  \
+            (report.type, report.patient, ", ".join(fields)))
+        
+        return True    
         
     @keyword("\s*sup(.*)")
     def supervisor(self, message, notice):
@@ -229,22 +251,22 @@ class App (rapidsms.app.App):
         # add our action codes to the report
 
         codes = optional_part.split()
-        action_codes = []
+        fields = []
         num_mov_codes = 0
         invalid_codes = []
         
         for code in codes:
 #            print "code: %s" % code
             try:
-                action_code = ActionCode.objects.get(code=code)
-                action_codes.append(action_code)
+                field_type = FieldType.objects.get(key=code)
+                fields.append(Field(type=field_type))
                 
                 # if the action code is a movement code, increment our counter
-                if action_code.type.id == 4:
+                if field_type.category.id == 4:
                     num_mov_codes += 1
                    
                                                
-            except ActionCode.DoesNotExist:
+            except FieldType.DoesNotExist:
                  invalid_codes.append(code)
 
 #        #in case an unknown action code is received  and more than one movement code
@@ -280,8 +302,9 @@ class App (rapidsms.app.App):
         report.save()
         
         # then associate all the action codes with it
-        for action_code in action_codes:
-            report.action_codes.add(action_code)            
+        for field in fields:
+            field.save()
+            report.fields.add(field)            
             
         message.respond(_("Pregnancy report submitted successfully"))
         
@@ -289,7 +312,7 @@ class App (rapidsms.app.App):
     
     @keyword("\s*risk(.*)")
     def risk(self, message, notice):
-        self.debug("RISK message: %s" % message.text)
+        print("RISK message: %s" % message.text)
         
         if not getattr(message, 'reporter', None):
             message.respond(_("Get registered first"))
@@ -301,6 +324,8 @@ class App (rapidsms.app.App):
             return True
         received_patient_id = m.group(1)
         optional_part = m.group(2)
+        
+        print "opt: %s" % optional_part
         
         # Create the report and link the particular patient to the report
         # in case patient have never been registered, report Pregnancy first
@@ -321,22 +346,22 @@ class App (rapidsms.app.App):
         # add our action codes to the report
 
         codes = optional_part.split()
-        action_codes = []
+        fields = []
         num_mov_codes = 0
         invalid_codes = []
         
         for code in codes:
-#            print "code: %s" % code
+            print "code: %s" % code
             try:
-                action_code = ActionCode.objects.get(code=code)
-                action_codes.append(action_code)
+                field_type = FieldType.objects.get(key=code)
+                fields.append(Field(type=field_type))
                 
                 # if the action code is a movement code, increment our counter
-                if action_code.type.id == 4:
+                if field_type.category.id == 4:
                     num_mov_codes += 1
                    
                                                
-            except ActionCode.DoesNotExist:
+            except FieldType.DoesNotExist:
                  invalid_codes.append(code)
 
 
@@ -353,11 +378,14 @@ class App (rapidsms.app.App):
             return True
         
         # save the report
+        
         report.save()
         
         # then associate all the action codes with it
-        for action_code in action_codes:
-            report.action_codes.add(action_code)            
+        for field in fields:
+            field.save()
+            print "saving field: %s" % field
+            report.fields.add(field)            
             
         message.respond(_("Thank you! Risk report submitted"))
         

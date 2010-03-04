@@ -84,8 +84,12 @@ class TestApp (TestScript):
         1 < Thank you for registering at Biryogo        
         1 > pre 10003 1982
         1 < Pregnancy report submitted successfully
+        1 > last
+        1 < type: Pregnancy patient: 10003 fields: 
         1 > risk 10003 ho
         1 < Thank you! Risk report submitted
+        1 > last
+        1 < type: Risk patient: 10003 fields: ho
         
         2 > risk 1000 ho fe ma
         2 < Get registered first
