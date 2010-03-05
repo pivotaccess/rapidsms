@@ -29,7 +29,7 @@ class ReportType(models.Model):
         return self.name   
 
 class FieldType(models.Model):
-    key = models.CharField(max_length=4, unique=True)
+    key = models.CharField(max_length=32, unique=True)
     description = models.TextField(blank=True)
     category = models.ForeignKey(FieldCategory)
     has_value = models.BooleanField(default=False)
@@ -48,11 +48,11 @@ class Patient(models.Model):
     
 class Field(models.Model):
     type = models.ForeignKey(FieldType)
-    value = models.DecimalField(max_digits=10, decimal_places=10, null=True)
+    value = models.DecimalField(max_digits=10, decimal_places=5, null=True)
     
     def __unicode__(self):
         if self.value:
-            return "%s=%d" % (self.type.key, self.value)
+            return "%s=%f" % (self.type.key, self.value)
         else:
             return "%s" % self.type.key
     

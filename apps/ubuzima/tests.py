@@ -112,6 +112,28 @@ class TestApp (TestScript):
 
        
     """	
+    
+    testBirth = """
+
+        1 > REG 08 05094 en
+        1 < Thank you for registering at Gashora
+        1 > bir 1234568 ho
+        1 < Always report Pregnancy before any birth report
+        1 > pre 123459 1965 ho ma
+        1 < Pregnancy report submitted successfully
+        1 > bir 123459 ho 
+        1 < Thank you! Birth report submitted
+        1 > bir 123459 ho ma 5.43k 3.2cm
+        1 < Thank you! Birth report submitted
+        1 > bir 123459 ho ma 5.43cm 3.2kg
+        1 < Thank you! Birth report submitted
+        1 > last
+        1 < type: Birth patient: 123459 fields: ho, ma, child_weight=5.430000, child_length=3.200000
+        
+
+        
+       
+    """	
 
     # define your test scripts here.
     # e.g.:

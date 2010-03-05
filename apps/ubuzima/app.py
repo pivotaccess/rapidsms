@@ -7,6 +7,7 @@ from apps.ubuzima.models import *
 from apps.reporters.models import *
 from django.utils.translation import ugettext as _
 from django.utils.translation import activate
+from decimal import *
 
 class App (rapidsms.app.App):
     
@@ -154,6 +155,9 @@ class App (rapidsms.app.App):
             (report.type, report.patient, ", ".join(fields)))
         
         return True    
+    
+        
+    
         
     @keyword("\s*sup(.*)")
     def supervisor(self, message, notice):
@@ -390,3 +394,137 @@ class App (rapidsms.app.App):
         message.respond(_("Thank you! Risk report submitted"))
         
         return True
+    
+    
+    
+    #Birth keyword
+    @keyword("\s*bir(.*)")
+    def birth(self, message, notice):
+        
+        if not getattr(message, 'reporter', None):
+            message.respond(_("Please,Get registered first, unknown Health agent"))
+            return True
+            
+        m = re.search("bir\s+(\d+)(.*)", message.text, re.IGNORECASE)
+        if not m:
+            message.respond(_("The correct format message is BIR PATIENT_ID"))
+            return True
+        received_patient_id = m.group(1)
+        optional_part = m.group(2)
+        
+        # Create the report and link the particular patient to the report
+        # in case the mother have never been registered, report Pregnancy first
+        try:
+            patient = Patient.objects.get(national_id=received_patient_id)
+                        
+        except Patient.DoesNotExist:
+            message.respond(_("Always report Pregnancy before any birth report"))
+            return True
+        
+        report_type = ReportType.objects.get(name='Birth')
+        report = Report(patient=patient, reporter=message.reporter, type=report_type)
+        
+        Location = message.reporter.location
+        
+        # Add field types in our report
+        codes = optional_part.split()
+        fields = []
+        num_mov_codes = 0
+        invalid_codes = []
+        
+        for code in codes:
+            try:
+                field_type = FieldType.objects.get(key=code)
+                fields.append(Field(type=field_type))
+                
+                # if the action code is a movement code, increment our counter
+                if field_type.category.id == 4:
+                    num_mov_codes += 1
+                
+            except FieldType.DoesNotExist:
+                m1 = re.search("(\d+\.?\d*)K", code, re.IGNORECASE)
+                m2 = re.search("(\d+\.?\d*)cm", code, re.IGNORECASE)
+                
+                # this is a weight
+                if m1:
+                    field_type = FieldType.objects.get(key="child_weight")
+                    value = Decimal(m1.group(1))
+                    field = Field(type=field_type, value=value)
+                    fields.append(field)
+                    
+                # this is a length
+                elif m2:
+                    field_type = FieldType.objects.get(key="child_length")
+                    value = Decimal(m2.group(1))
+                    field = Field(type=field_type, value=value)
+                    fields.append(field)
+                    print ("length is %s, " % field)
+                    
+                    
+                # unknown, add to invalid codes
+                else:
+                    invalid_codes.append(code)
+                    
+        error_msg = ""
+        if len(invalid_codes) > 0:
+            error_msg += _("Unknown action code: %s.  ") % ", ".join(invalid_codes)
+            
+        if num_mov_codes > 1:
+            error_msg += _("You cannot give more than one movement code")
+        
+        if error_msg:
+            message.respond(_("Error.  %(error)s") % \
+            { 'error': error_msg })
+            return True
+        
+        # save the report
+        
+        report.save()
+        
+        # then associate all the action codes with it
+        for field in fields:
+            field.save()
+            print "saving field: %s" % field
+            report.fields.add(field)            
+            
+        message.respond(_("Thank you! Birth report submitted"))
+        return True
+                
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    

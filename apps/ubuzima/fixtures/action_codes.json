@@ -249,5 +249,37 @@
             "category": "4"
        }
  
+   },
+   {
+        "pk": 24,
+        "model": "ubuzima.fieldtype",
+        "fields": {
+            "key": "child_weight",
+	    "description": "Child weight",
+            "category": "1",
+	    "has_value": true
+       }
+ 
+   },
+   {
+        "pk": 25,
+        "model": "ubuzima.fieldtype",
+        "fields": {
+            "key": "MUAC",
+	    "description": "muac",
+            "category": "1",
+	    "has_value": true
+       }
+ 
+   },   {
+        "pk": 26,
+        "model": "ubuzima.fieldtype",
+        "fields": {
+            "key": "child_length",
+	    "description": "Child length",
+            "category": "1",
+	    "has_value": true
+       }
+ 
    }
 ]
