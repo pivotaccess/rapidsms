@@ -64,8 +64,9 @@ class Report(models.Model):
     fields = models.ManyToManyField(Field)
     patient = models.ForeignKey(Patient)
     type = models.ForeignKey(ReportType)
+    child_dob = models.CharField(max_length=10, null=True)
     
     def __unicode__(self):
-        return "Report id: %d type: %s patient: %s" % (self.pk, self.type.name, self.patient.national_id)
+        return "Report id: %d type: %s patient: %s child dob: %s" % (self.pk, self.type.name, self.patient.national_id, self.child_dob)
     
     

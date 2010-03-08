@@ -77,7 +77,7 @@ class TestApp (TestScript):
         1 < Error.  You cannot give more than one movement code
         1 > Pre 10003 1982 ho cl fE 
         1 < Error.  You cannot give more than one movement code
-        1 > pre 10003 1982 ho cl fe 21 
+        1 > pre 10003 1982 ho cl fe 21
         1 < Error.  Unknown action code: 21.  You cannot give more than one movement code
         1 > pre 10003 1982 ma cl fe 21 
         1 < Error.  Unknown action code: 21.
@@ -141,9 +141,10 @@ class TestApp (TestScript):
         1 < Thank you! Birth report submitted
         1 > last
         1 < type: Birth patient: 123459 (1965) fields: ma, ho, child_weight=3.20, child_length=5.43
-        
-
-        
+        1 > bir 123459 ho ma 5.43cm 3.2kg 2010.4.10
+        1 < Thank you! Birth report submitted
+        1 > last
+        1 < type: Birth patient: 123459 (1965) ChildDOB: 2010.4.10 fields: ma, ho, child_weight=3.20, child_length=5.43
        
     """	
 

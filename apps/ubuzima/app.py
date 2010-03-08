@@ -178,7 +178,7 @@ class App (rapidsms.app.App):
             
             # two digit date, guess on the first digits based on size
             if len(value) == 2:
-                if int(value) <= date.today().year:
+                if int(value) <= date.today().year % 100:
                     value = "20%s" % value
                 else:
                     value = "19%s" % value
@@ -190,12 +190,12 @@ class App (rapidsms.app.App):
         # full date: DD.MM.YYYY
         m3 = re.search("^(\d+)(\.)(\d+)(\.)(\d+)", dob_string) 
         if m3:
-            value = "%s.%s.%s" % (m3.group(1), m3.group(2), m3.group(3))
-            return value
+            # TODO: we could be a lot smarter about this, figuring out the actual years and dates
+            return dob_string
             
         return None
     
-    def read_fields(self, code_string):
+    def read_fields(self, code_string, accept_date=False):
         """Tries to parse all the fields according to our set of action and movement codes.  We also 
            try to figure out if certain fields are dates and stuff them in as well. """
         
@@ -241,7 +241,13 @@ class App (rapidsms.app.App):
                     
                 # unknown
                 else:
-                    invalid_codes.append(code)
+                    # try to parse as a dob
+                    date = self.parse_dob(code)
+
+                    if accept_date and date:
+                        dob = date
+                    else:
+                        invalid_codes.append(code)
 
         # take care of any error messaging
         error_msg = ""
@@ -258,7 +264,7 @@ class App (rapidsms.app.App):
             # there's actually an error, throw it over the fence
             raise Exception(error_msg)
         
-        return fields
+        return (fields, dob)
     
     
     @keyword("\s*pre(.*)")
@@ -289,11 +295,16 @@ class App (rapidsms.app.App):
         
         # read our fields
         try:
-            fields = self.read_fields(optional_part)
+            (fields, dob) = self.read_fields(optional_part)
         except Exception, e:
             # there were invalid fields, respond and exit
             message.respond("%s" % e)
             return True
+        
+                
+        # if we got a dob, set it
+        if dob:
+            report.child_dob = dob
         
         # save the report
         report.save()
@@ -337,7 +348,7 @@ class App (rapidsms.app.App):
         
         # read our fields
         try:
-            fields = self.read_fields(optional_part)
+            (fields, dob) = self.read_fields(optional_part)
         except Exception, e:
             # there were invalid fields, respond and exit
             message.respond("%s" % e)
@@ -385,11 +396,15 @@ class App (rapidsms.app.App):
         
         # read our fields
         try:
-            fields = self.read_fields(optional_part)
+            (fields, dob) = self.read_fields(optional_part, True)
         except Exception, e:
             # there were invalid fields, respond and exit
             message.respond("%s" % e)
             return True
+
+        # set the dob for the child if we got one
+        if dob:
+            report.child_dob = dob
 
         # save the report
         report.save()
@@ -404,14 +419,16 @@ class App (rapidsms.app.App):
     
     @keyword("\s*last")
     def last(self, message):
+        """Echos the last report that was sent for this report.  This is primarily used for unit testing"""
+        
         if not getattr(message, 'reporter', None):
-            message.respond("We dont recognize you, register first.")
+            message.respond(_("We dont recognize you, register first."))
             return True
     
         reports = Report.objects.filter(reporter=message.reporter).order_by('-pk')
     
         if not reports:
-            message.respond("you have not yet sent any report")
+            message.respond(_("you have not yet sent any report"))
             return True
     
         report = reports[0]
@@ -419,8 +436,10 @@ class App (rapidsms.app.App):
         fields = []
         for field in report.fields.all().order_by('type'):
             fields.append(unicode(field))
+            
+        dob = _(" ChildDOB: %(dob)s") % { 'dob': report.child_dob } if report.child_dob else ""
         
-        message.respond("type: %s patient: %s fields: %s" %  \
-            (report.type, report.patient, ", ".join(fields)))
+        message.respond("type: %s patient: %s%s fields: %s" %
+            (report.type, report.patient, dob, ", ".join(fields)))
         
         return True    
