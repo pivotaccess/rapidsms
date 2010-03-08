@@ -44,6 +44,7 @@ class App (rapidsms.app.App):
                 return func(self, message, *captures)
             except Exception as e:
                 self.debug("Error: %s %s" % (e, traceback.format_exc()))
+                print "Error: %s %s" % (e, traceback.format_exc())
                 message.respond(_("Unknown Error, please check message format and try again."))
                 return True
         else:
@@ -63,50 +64,58 @@ class App (rapidsms.app.App):
     def stop (self):
         """Perform global app cleanup when the application is stopped."""
         pass
-
-
-    @keyword("\s*reg(.*)")
-    def register(self, message, notice):
-        self.debug("REG message: %s" % message.text)
-        m = re.search("reg\s+(\d+)\s+(\d+)(.*)", message.text, re.IGNORECASE)
-        
+    
+    @keyword("\s*(sup|reg)(.*)")
+    def sup_or_reg(self, message, keyword, rest):
+        """Handles both incoming REG and SUP commands, creating the appropriate Reporter object, 
+           stashing away the attributes and making the connection with this phone number. """
+           
+        self.debug("SUP message: %s" % message.text)
+        m = re.search("^\s*(\w+)\s+(\d+)\s+(\d+)(.*)$", message.text, re.IGNORECASE)
         if not m:
-            message.respond(_("The correct message format is REG CHWID CLINICID"))
+            # give appropriate error message based on the incoming message type
+            if keyword.lower() == 'SUP':
+                message.respond(_("The correct message format is SUP SUPID CLINICID or HOSPITALID"))
+            else:
+                message.respond(_("The correct message format is REG CHWID CLINICID"))
             return True
-        received_chw_id = m.group(1)
-        received_clinic_id = m.group(2)
-        optional_part = m.group(3)
+
+        received_nat_id = m.group(2)
+        received_clinic_id = m.group(3)
+        optional_part = m.group(4)
         
-        clinics = Location.objects.filter(code=fosa_to_code(received_clinic_id))
-        
-        if not clinics:
-            message.respond(_("Unknown clinic id: %(clinic)s") % \
-            { 'clinic': received_clinic_id })
-            return True
-        
-        clinic = clinics[0]
-         
-        #do we already have a report for our connection?
-        #if so, just update it
+        # do we already have a report for our connection?
+        # if so, just update it
         if not getattr(message, 'reporter', None):
-            rep, created = Reporter.objects.get_or_create(alias=received_chw_id)
+            rep, created = Reporter.objects.get_or_create(alias=received_nat_id)
             message.reporter = rep
             
-        #connect this reporter to the connection
+        # connect this reporter to the connection
         message.persistant_connection.reporter = message.reporter
         message.persistant_connection.save()
         
-        self.debug("saved connection: %s to reporter: %s" % (message.persistant_connection, message.reporter))
+        # read our clinic
+        clinic = Location.objects.filter(code=fosa_to_code(received_clinic_id))
         
-        #set the location for this reporter
+        # not found?  That's an error
+        if not clinic:
+            message.respond(_("Unknown Health unit id: %(clinic)s") % \
+                            { "clinic": received_clinic_id})
+            return True
+        
+        clinic = clinic[0]
+        
+        # set the location for this reporter
         message.reporter.location = clinic
         
-        #set the group for this reporter
-        group = ReporterGroup.objects.get(title='CHW')
+        # set the group for this reporter based on the incoming keyword
+        group_title = 'Supervisor' if (keyword.lower() == 'sup') else 'CHW' 
+        
+        group = ReporterGroup.objects.get(title=group_title)
         message.reporter.groups.add(group)
         
-        m2 = re.search("(.*)(fr|en|rw)(.*)", optional_part)    
-        
+        m2 = re.search("(.*)(fr|en|rw)(.*)", optional_part)
+    
         lang = "rw"
         if m2:
             lang = m2.group(2)
@@ -118,25 +127,21 @@ class App (rapidsms.app.App):
         # save away the language
         message.reporter.language = lang
 
+        # and activate it
+        activate(lang)
+
         # if we actually have remaining text, then save that away as our village name
         if optional_part:
             message.reporter.village = optional_part
-             
-        # save our reporter
+            
+        # save everything away
         message.reporter.save()
         
-        # set our language
-        activate(lang)
-        
         message.respond(_("Thank you for registering at %(clinic)s") % \
-                        { 'clinic':clinics[0].name })
+                        { 'clinic': clinic.name } )
         
-        self.debug("chw id: %s  clinic id: %s" % (m.group(1), m.group(2)))
-        self.debug("Reg mesage: %s" % clinics)
-    
         return True
-
-    
+        
     @keyword("\s*who")
     def who(self, message):
         """Returns what we know about the sender of this message.  This is used primarily for unit
@@ -181,74 +186,7 @@ class App (rapidsms.app.App):
         
         return True    
     
-        
-    
-        
-    @keyword("\s*sup(.*)")
-    def supervisor(self, message, notice):
-        self.debug("SUP message: %s" % message.text)
-        m = re.search("sup\s+(\d+)\s+(\d+)(.*)", message.text, re.IGNORECASE)
-        if not m:
-            message.respond(_("The correct format message is  SUP SUPID CLINICID or HOSPITALID"))
-            return True
-        
-        received_sup_id = m.group(1)
-        received_clinic_id = m.group(2)
-        optional_part = m.group(3)
-        
-        
-            
-        clinic = Location.objects.filter(code=fosa_to_code(received_clinic_id))
-        
-        if not clinic:
-            message.respond(_("Unknown Health unit id: %(clinic)s") % \
-            { "clinic": received_clinic_id})
-            return True
-        
-        clinic = clinic[0]
-        
-        #do we already have a report for our connection?
-        #if so, just update it
-        if not getattr(message, 'reporter', None):
-            rep, created = Reporter.objects.get_or_create(alias=received_sup_id)
-            message.reporter = rep
-            
-        #connect this reporter to the connection
-        message.persistant_connection.reporter = message.reporter
-        message.persistant_connection.save()
-        
-        self.debug("saved connection: %s to reporter: %s" % (message.persistant_connection, message.reporter))
-        
-        #set the location for this reporter
-        message.reporter.location = clinic
-        
-        #set the group for this reporter
-        group = ReporterGroup.objects.get(title='Supervisor')
-        message.reporter.groups.add(group)
-        
-        m2 = re.search("(fr|en|rw)", optional_part)
-        lang = "rw" #the default language
-        
-        if m2:
-            lang = m2.group(1)
-            self.debug("Your prefered language is: %s" % lang)
-        
-        message.reporter.language = lang
-        message.reporter.save()
 
-        activate(lang)
-        
-        message.respond(_("Thank you for registering at %(clinic)s") % \
-        { 'clinic': clinic.name } )
-        
-        self.debug("sup id: %s  clinic id: %s" % (m.group(1), m.group(2)))
-        self.debug("sup message: %s" % clinic)
-        
-        return True
-
-
-
-    
     @keyword("\s*pre(.*)")
     def pregnancy(self, message, notice):
         self.debug("PRE message: %s" % message.text)

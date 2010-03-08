@@ -9,11 +9,11 @@ class TestApp (TestScript):
 
     testRegister = """
         2 > reg 10 05
-        2 < Unknown clinic id: 05
+        2 < Unknown Health unit id: 05
         1 > reg asdf
         1 < The correct message format is REG CHWID CLINICID
         1 > reg 01 01
-        1 < Unknown clinic id: 01
+        1 < Unknown Health unit id: 01
         1 > reg 01 01001
         1 < Thank you for registering at Biryogo
         3 > REG 01 01001 
