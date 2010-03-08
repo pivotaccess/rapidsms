@@ -63,6 +63,8 @@ class TestApp (TestScript):
         1 < Thank you for registering at Biryogo
         1 > pre 10003 1982
         1 < Pregnancy report submitted successfully
+        1 > LAST
+        1 < type: Pregnancy patient: 10003 (1982) fields:
         1 > pre 10003 1982 ho ma fe 
         1 < Pregnancy report submitted successfully
         1 > pre 10003 1982 HO MA fe 
@@ -95,11 +97,11 @@ class TestApp (TestScript):
         1 > pre 10003 1982
         1 < Pregnancy report submitted successfully
         1 > last
-        1 < type: Pregnancy patient: 10003 fields: 
+        1 < type: Pregnancy patient: 10003 (1982) fields: 
         1 > risk 10003 ho
         1 < Thank you! Risk report submitted
         1 > last
-        1 < type: Risk patient: 10003 fields: ho
+        1 < type: Risk patient: 10003 (1982) fields: ho
         
         2 > risk 1000 ho fe ma
         2 < Get registered first
@@ -138,7 +140,7 @@ class TestApp (TestScript):
         1 > bir 123459 ho ma 5.43cm 3.2kg
         1 < Thank you! Birth report submitted
         1 > last
-        1 < type: Birth patient: 123459 fields: ma, ho, child_weight=3.20, child_length=5.43
+        1 < type: Birth patient: 123459 (1965) fields: ma, ho, child_weight=3.20, child_length=5.43
         
 
         

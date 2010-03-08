@@ -10,6 +10,7 @@ from django.utils.translation import activate
 from decimal import *
 from exceptions import Exception
 import traceback
+from datetime import *
 
 class App (rapidsms.app.App):
     
@@ -163,6 +164,37 @@ class App (rapidsms.app.App):
             message.respond(_("We don't recognize you"))
         return True
     
+    
+    def parse_dob(self, dob_string):
+        """Tries to parse a string into some kind of date representation.  Note that we don't use Date objects
+           to store things away, because we want to accept limited precision dates, ie, just the year if 
+           necessary."""
+        
+        # simple #### date.. ie, 1987 or 87
+        m3 = re.search("^(\d+)$", dob_string)
+    
+        if m3:
+            value = m3.group(1)
+            
+            # two digit date, guess on the first digits based on size
+            if len(value) == 2:
+                if int(value) <= date.today().year:
+                    value = "20%s" % value
+                else:
+                    value = "19%s" % value
+                                
+            # we have a four digit date, does it look reasonable?
+            if len(value) == 4:
+                return value
+                    
+        # full date: DD.MM.YYYY
+        m3 = re.search("^(\d+)(\.)(\d+)(\.)(\d+)", dob_string) 
+        if m3:
+            value = "%s.%s.%s" % (m3.group(1), m3.group(2), m3.group(3))
+            return value
+            
+        return None
+    
     def read_fields(self, code_string):
         """Tries to parse all the fields according to our set of action and movement codes.  We also 
            try to figure out if certain fields are dates and stuff them in as well. """
@@ -173,13 +205,16 @@ class App (rapidsms.app.App):
         invalid_codes = []
         num_mov_codes = 0
         
+        # the dob we might extract from this
+        dob = None
+        
         # for each code
         for code in codes:
             try:
                 # first try to look up the code in the DB
                 field_type = FieldType.objects.get(key=code.lower())
                 fields.append(Field(type=field_type))
-                
+                7
                 # if the action code is a movement code, increment our counter of movement codes
                 # messages may only have one movement code
                 if field_type.category.id == 4:
@@ -204,7 +239,7 @@ class App (rapidsms.app.App):
                     field = Field(type=field_type, value=value)
                     fields.append(field)
                     
-                # unknown, add to invalid codes
+                # unknown
                 else:
                     invalid_codes.append(code)
 
@@ -223,7 +258,7 @@ class App (rapidsms.app.App):
             # there's actually an error, throw it over the fence
             raise Exception(error_msg)
         
-        return fields 
+        return fields
     
     
     @keyword("\s*pre(.*)")
@@ -234,19 +269,20 @@ class App (rapidsms.app.App):
             message.respond(_("You need to be registered first"))
             return True
 
-        m = re.search("pre\s+(\d+)\s+(\d+)(.*)", message.text, re.IGNORECASE)
+        m = re.search("pre\s+(\d+)\s+(\w+)(.*)", message.text, re.IGNORECASE)
         if not m:
             message.respond(_("The correct format message is PRE PATIENT_ID DATE_BIRTH"))
             return True
         
         received_patient_id = m.group(1)
-        date_birth = m.group(2)
+        dob = self.parse_dob(m.group(2))
         optional_part = m.group(3)
 
         # get or create the patient
-        patient, created = Patient.objects.get_or_create(national_id=received_patient_id,\
-                                                         location=message.reporter.location)
-                
+        patient, created = Patient.objects.get_or_create(national_id=received_patient_id,
+                                                         location=message.reporter.location,
+                                                         dob=dob)
+        
         # create our report
         report_type = ReportType.objects.get(name='Pregnancy')
         report = Report(patient=patient, reporter=message.reporter, type=report_type)
@@ -316,10 +352,7 @@ class App (rapidsms.app.App):
             report.fields.add(field)            
             
         message.respond(_("Thank you! Risk report submitted"))
-        
         return True
-    
-    
     
     #Birth keyword
     @keyword("\s*bir(.*)")

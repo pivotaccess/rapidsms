@@ -40,10 +40,13 @@ class FieldType(models.Model):
 class Patient(models.Model):
     location = models.ForeignKey(Location)
     national_id = models.CharField(max_length=20, unique=True)
-    dob = models.DateField(null=True)
+    dob = models.CharField(max_length=10, null=True)
     
     def __unicode__(self):
-        return self.national_id
+        if self.dob:
+            return "%s (%s)" % (self.national_id, self.dob)
+        else:
+            return "%s" % self.national_id
     
     
 class Field(models.Model):
