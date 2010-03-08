@@ -1,4 +1,34 @@
 [
+
+    {
+        "pk": 1,
+        "model": "ubuzima.reporttype",
+        "fields": {
+            "name": "Birth"
+         }
+    },
+    {
+        "pk": 2,
+        "model": "ubuzima.reporttype",
+        "fields": {
+            "name": "Death"
+        }
+    },
+    {
+        "pk": 3,
+        "model": "ubuzima.reporttype",
+        "fields": {
+            "name": "Risk"
+        }
+    },
+    {
+        "pk": 4,
+        "model": "ubuzima.reporttype",
+        "fields": {
+            "name": "Pregnancy"
+        }
+    },
+
     {
         "pk": 1,
         "model": "ubuzima.fieldcategory",

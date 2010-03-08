@@ -52,7 +52,7 @@ class Field(models.Model):
     
     def __unicode__(self):
         if self.value:
-            return "%s=%f" % (self.type.key, self.value)
+            return "%s=%.2f" % (self.type.key, self.value)
         else:
             return "%s" % self.type.key
     

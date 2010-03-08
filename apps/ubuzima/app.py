@@ -8,8 +8,15 @@ from apps.reporters.models import *
 from django.utils.translation import ugettext as _
 from django.utils.translation import activate
 from decimal import *
+from exceptions import Exception
+import traceback
 
 class App (rapidsms.app.App):
+    
+    # map of language code to language name
+    LANG = { 'en': 'English',
+             'fr': 'French',
+             'rw': 'Kinyarwanda' }
     
     keyword = Keyworder()
     
@@ -32,8 +39,13 @@ class App (rapidsms.app.App):
             activate('rw')
         
         if results:
-            func, captures = results
-            return func(self, message, *captures)
+            try:
+                func, captures = results
+                return func(self, message, *captures)
+            except Exception as e:
+                self.debug("Error: %s %s" % (e, traceback.format_exc()))
+                message.respond(_("Unknown Error, please check message format and try again."))
+                return True
         else:
             self.debug("NO MATCH FOR %s" % message.text)
             message.respond(_("We don't recogniz this message"))
@@ -57,7 +69,6 @@ class App (rapidsms.app.App):
     def register(self, message, notice):
         self.debug("REG message: %s" % message.text)
         m = re.search("reg\s+(\d+)\s+(\d+)(.*)", message.text, re.IGNORECASE)
-             
         
         if not m:
             message.respond(_("The correct message format is REG CHWID CLINICID"))
@@ -65,9 +76,6 @@ class App (rapidsms.app.App):
         received_chw_id = m.group(1)
         received_clinic_id = m.group(2)
         optional_part = m.group(3)
-        
-        
-        
         
         clinics = Location.objects.filter(code=fosa_to_code(received_clinic_id))
         
@@ -97,21 +105,31 @@ class App (rapidsms.app.App):
         group = ReporterGroup.objects.get(title='CHW')
         message.reporter.groups.add(group)
         
-        m2 = re.search("(fr|en|rw)", optional_part)    
+        m2 = re.search("(.*)(fr|en|rw)(.*)", optional_part)    
         
         lang = "rw"
         if m2:
-            lang = m2.group(1)
+            lang = m2.group(2)
             self.debug("Your prefered language is: %s" % lang) 
- 
-            
+                        
+            # build our new optional part, which is just the remaining stuff
+            optional_part = ("%s %s" % (m2.group(1), m2.group(3))).strip()
+
+        # save away the language
         message.reporter.language = lang
+
+        # if we actually have remaining text, then save that away as our village name
+        if optional_part:
+            message.reporter.village = optional_part
+             
+        # save our reporter
         message.reporter.save()
         
+        # set our language
         activate(lang)
         
         message.respond(_("Thank you for registering at %(clinic)s") % \
-        { 'clinic':clinics[0].name })
+                        { 'clinic':clinics[0].name })
         
         self.debug("chw id: %s  clinic id: %s" % (m.group(1), m.group(2)))
         self.debug("Reg mesage: %s" % clinics)
@@ -121,13 +139,20 @@ class App (rapidsms.app.App):
     
     @keyword("\s*who")
     def who(self, message):
+        """Returns what we know about the sender of this message.  This is used primarily for unit
+           testing though it may prove usefu in the field"""
+           
         if getattr(message, 'reporter', None):
             if not message.reporter.groups.all():
                 message.respond(_("You are not in a group, located at %(location)s, you speak %(language)s") % \
-                    { 'location': message.reporter.location.name, 'language': message.reporter.language} )          
+                    { 'location': message.reporter.location.name, 'language': App.LANG[message.reporter.language] } )          
             else:
+                location = message.reporter.location.name
+                if message.reporter.village:
+                    location += " (%s)" % message.reporter.village
+
                 message.respond(_("You are a %(group)s, located at %(location)s, you speak %(language)s") % \
-                    { 'group': message.reporter.groups.all()[0].title, 'location': message.reporter.location.name, 'language': message.reporter.language} )
+                    { 'group': message.reporter.groups.all()[0].title, 'location': location, 'language': App.LANG[message.reporter.language] } )
             
         else:
             message.respond(_("We don't recognize you"))
@@ -148,7 +173,7 @@ class App (rapidsms.app.App):
         report = reports[0]
         
         fields = []
-        for field in report.fields.all():
+        for field in report.fields.all().order_by('type'):
             fields.append(unicode(field))
         
         message.respond("type: %s patient: %s fields: %s" %  \
@@ -245,24 +270,20 @@ class App (rapidsms.app.App):
         # get or create the patient
         patient, created = Patient.objects.get_or_create(national_id=received_patient_id,\
         location=message.reporter.location)
-        
                 
         # create our report
         report_type = ReportType.objects.get(name='Pregnancy')
         report = Report(patient=patient, reporter=message.reporter, type=report_type)
         
-        
         # add our action codes to the report
-
         codes = optional_part.split()
         fields = []
         num_mov_codes = 0
         invalid_codes = []
         
         for code in codes:
-#            print "code: %s" % code
             try:
-                field_type = FieldType.objects.get(key=code)
+                field_type = FieldType.objects.get(key=code.lower())
                 fields.append(Field(type=field_type))
                 
                 # if the action code is a movement code, increment our counter
@@ -273,22 +294,7 @@ class App (rapidsms.app.App):
             except FieldType.DoesNotExist:
                  invalid_codes.append(code)
 
-#        #in case an unknown action code is received  and more than one movement code
-#        if len(invalid_codes)>0 and num_mov_codes>1:
-#            message.respond("Error.  More than one movement code and Unknown action code: %s" % ", ".join(invalid_codes))   
-#            return True
-#               
-#        #in case an unknown action code is received
-#        if len(invalid_codes) > 0:
-#            message.respond("Error.  Unknown action code: %s" % ", ".join(invalid_codes))
-#            return True
-#        
-#        # error out if there is more than one movement code    
-#        if num_mov_codes > 1:
-#            message.respond("Error.  You cannot give more than one movement code")
-#            return True
-        
-        
+        # take care of any error messaging
         error_msg = ""
         if len(invalid_codes) > 0:
             error_msg += _("Unknown action code: %(invalidcode)s.  ") % \
@@ -316,8 +322,6 @@ class App (rapidsms.app.App):
     
     @keyword("\s*risk(.*)")
     def risk(self, message, notice):
-        print("RISK message: %s" % message.text)
-        
         if not getattr(message, 'reporter', None):
             message.respond(_("Get registered first"))
             return True
@@ -328,8 +332,6 @@ class App (rapidsms.app.App):
             return True
         received_patient_id = m.group(1)
         optional_part = m.group(2)
-        
-        print "opt: %s" % optional_part
         
         # Create the report and link the particular patient to the report
         # in case patient have never been registered, report Pregnancy first
@@ -355,9 +357,8 @@ class App (rapidsms.app.App):
         invalid_codes = []
         
         for code in codes:
-            print "code: %s" % code
             try:
-                field_type = FieldType.objects.get(key=code)
+                field_type = FieldType.objects.get(key=code.lower())
                 fields.append(Field(type=field_type))
                 
                 # if the action code is a movement code, increment our counter
@@ -388,7 +389,6 @@ class App (rapidsms.app.App):
         # then associate all the action codes with it
         for field in fields:
             field.save()
-            print "saving field: %s" % field
             report.fields.add(field)            
             
         message.respond(_("Thank you! Risk report submitted"))
@@ -434,7 +434,7 @@ class App (rapidsms.app.App):
         
         for code in codes:
             try:
-                field_type = FieldType.objects.get(key=code)
+                field_type = FieldType.objects.get(key=code.lower())
                 fields.append(Field(type=field_type))
                 
                 # if the action code is a movement code, increment our counter
@@ -458,8 +458,6 @@ class App (rapidsms.app.App):
                     value = Decimal(m2.group(1))
                     field = Field(type=field_type, value=value)
                     fields.append(field)
-                    print ("length is %s, " % field)
-                    
                     
                 # unknown, add to invalid codes
                 else:
@@ -484,7 +482,6 @@ class App (rapidsms.app.App):
         # then associate all the action codes with it
         for field in fields:
             field.save()
-            print "saving field: %s" % field
             report.fields.add(field)            
             
         message.respond(_("Thank you! Birth report submitted"))

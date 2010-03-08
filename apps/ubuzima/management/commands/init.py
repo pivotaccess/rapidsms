@@ -70,6 +70,12 @@ class Command(NoArgsCommand):
         #load location_types fixture
         management.call_command('loaddata', 'fosa_location_types.json')
         
+        # init our reporter groups
+        management.call_command('loaddata', 'groups.json')
+        
+        # init our reporting objects
+        management.call_command('loaddata', 'reporting.json')
+        
         rows = list(self._csv("fosa_table.csv"))
 
         rows = rows[1:]

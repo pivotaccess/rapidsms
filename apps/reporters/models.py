@@ -71,6 +71,9 @@ class Reporter(models.Model):
     # here are some fields that don't belong here
     location   = models.ForeignKey(Location, related_name="reporters", null=True, blank=True)
     role       = models.ForeignKey(Role, related_name="reporters", null=True, blank=True)
+    
+    # the village name they are associated with
+    village    = models.CharField(max_length=255, null=True)
 
     def __unicode__(self):
         return self.connection().identity

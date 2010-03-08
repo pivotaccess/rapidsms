@@ -5,7 +5,7 @@ from apps.reporters.app import App as ReporterApp
 class TestApp (TestScript):
     apps = (App, ReporterApp)
 
-    fixtures = ("fosa_location_types", "fosa_test_locations", "groups", "report_types", "action_codes")
+    fixtures = ("fosa_location_types", "fosa_test_locations", "groups", "reporting" )
 
     testRegister = """
         2 > reg 10 05
@@ -19,17 +19,27 @@ class TestApp (TestScript):
         3 > REG 01 01001 
         3 < Thank you for registering at Biryogo
 
-        #testing the default language
+        # testing the default language
         3 > WHO
-        3 < You are a CHW, located at Biryogo, you speak rw
+        3 < You are a CHW, located at Biryogo, you speak Kinyarwanda
 
         4 > WHO
         4 < We don't recognize you
         5 > REG 08 01001 en
         5 < Thank you for registering at Biryogo
         5 > WHO
-        5 < You are a CHW, located at Biryogo, you speak en
-    
+        5 < You are a CHW, located at Biryogo, you speak English
+
+        # village names
+        4 > REG 01 01001 en foo
+        4 < Thank you for registering at Biryogo
+        4 > WHO
+        4 < You are a CHW, located at Biryogo (foo), you speak English
+        5 > REG 01 01001 foo en
+        5 < Thank you for registering at Biryogo
+        5 > WHO
+        5 < You are a CHW, located at Biryogo (foo), you speak English
+
     """
     
     testSupervisor = """
@@ -38,7 +48,7 @@ class TestApp (TestScript):
         4 > WHO
         4 < We don't recognize you
         1 > who   
-        1 < You are a Supervisor, located at Gashora, you speak en
+        1 < You are a Supervisor, located at Gashora, you speak English
 
         2 > sup 34 048547 fr
         2 < Unknown Health unit id: 048547
@@ -128,7 +138,7 @@ class TestApp (TestScript):
         1 > bir 123459 ho ma 5.43cm 3.2kg
         1 < Thank you! Birth report submitted
         1 > last
-        1 < type: Birth patient: 123459 fields: ho, ma, child_weight=5.430000, child_length=3.200000
+        1 < type: Birth patient: 123459 fields: ma, ho, child_weight=3.20, child_length=5.43
         
 
         
