@@ -163,30 +163,69 @@ class App (rapidsms.app.App):
             message.respond(_("We don't recognize you"))
         return True
     
-    @keyword("\s*last")
-    def last(self, message):
-        if not getattr(message, 'reporter', None):
-            message.respond("We dont recognize you, register first.")
-            return True
-    
-        reports = Report.objects.filter(reporter=message.reporter).order_by('-pk')
-    
-        if not reports:
-            message.respond("you have not yet sent any report")
-            return True
-    
-        report = reports[0]
+    def read_fields(self, code_string):
+        """Tries to parse all the fields according to our set of action and movement codes.  We also 
+           try to figure out if certain fields are dates and stuff them in as well. """
         
+        # split our code string by spaces
+        codes = code_string.split()
         fields = []
-        for field in report.fields.all().order_by('type'):
-            fields.append(unicode(field))
+        invalid_codes = []
+        num_mov_codes = 0
         
-        message.respond("type: %s patient: %s fields: %s" %  \
-            (report.type, report.patient, ", ".join(fields)))
-        
-        return True    
-    
+        # for each code
+        for code in codes:
+            try:
+                # first try to look up the code in the DB
+                field_type = FieldType.objects.get(key=code.lower())
+                fields.append(Field(type=field_type))
+                
+                # if the action code is a movement code, increment our counter of movement codes
+                # messages may only have one movement code
+                if field_type.category.id == 4:
+                    num_mov_codes += 1
 
+            # didn't recognize this code?  then it is a scalar value, run some regexes to derive what it is
+            except FieldType.DoesNotExist:
+                m1 = re.search("(\d+\.?\d*)(k|kg|kilo|kilogram)", code, re.IGNORECASE)
+                m2 = re.search("(\d+\.?\d*)(c|cm|cent|centimeter)", code, re.IGNORECASE)
+                
+                # this is a weight
+                if m1:
+                    field_type = FieldType.objects.get(key="child_weight")
+                    value = Decimal(m1.group(1))
+                    field = Field(type=field_type, value=value)
+                    fields.append(field)
+                    
+                # this is a length
+                elif m2:
+                    field_type = FieldType.objects.get(key="child_length")
+                    value = Decimal(m2.group(1))
+                    field = Field(type=field_type, value=value)
+                    fields.append(field)
+                    
+                # unknown, add to invalid codes
+                else:
+                    invalid_codes.append(code)
+
+        # take care of any error messaging
+        error_msg = ""
+        if len(invalid_codes) > 0:
+            error_msg += _("Unknown action code: %(invalidcode)s.  ") % \
+                { 'invalidcode':  ", ".join(invalid_codes)}
+            
+        if num_mov_codes > 1:
+            error_msg += unicode(_("You cannot give more than one movement code"))
+        
+        if error_msg:
+            error_msg = _("Error.  %(error)s") % { 'error': error_msg }
+            
+            # there's actually an error, throw it over the fence
+            raise Exception(error_msg)
+        
+        return fields 
+    
+    
     @keyword("\s*pre(.*)")
     def pregnancy(self, message, notice):
         self.debug("PRE message: %s" % message.text)
@@ -195,10 +234,9 @@ class App (rapidsms.app.App):
             message.respond(_("You need to be registered first"))
             return True
 
-
         m = re.search("pre\s+(\d+)\s+(\d+)(.*)", message.text, re.IGNORECASE)
         if not m:
-            message.respond(_("The correct format message is  PRE PATIENT_ID DATE_BIRTH"))
+            message.respond(_("The correct format message is PRE PATIENT_ID DATE_BIRTH"))
             return True
         
         received_patient_id = m.group(1)
@@ -207,49 +245,24 @@ class App (rapidsms.app.App):
 
         # get or create the patient
         patient, created = Patient.objects.get_or_create(national_id=received_patient_id,\
-        location=message.reporter.location)
+                                                         location=message.reporter.location)
                 
         # create our report
         report_type = ReportType.objects.get(name='Pregnancy')
         report = Report(patient=patient, reporter=message.reporter, type=report_type)
         
-        # add our action codes to the report
-        codes = optional_part.split()
-        fields = []
-        num_mov_codes = 0
-        invalid_codes = []
-        
-        for code in codes:
-            try:
-                field_type = FieldType.objects.get(key=code.lower())
-                fields.append(Field(type=field_type))
-                
-                # if the action code is a movement code, increment our counter
-                if field_type.category.id == 4:
-                    num_mov_codes += 1
-                   
-                                               
-            except FieldType.DoesNotExist:
-                 invalid_codes.append(code)
-
-        # take care of any error messaging
-        error_msg = ""
-        if len(invalid_codes) > 0:
-            error_msg += _("Unknown action code: %(invalidcode)s.  ") % \
-            { 'invalidcode':  ", ".join(invalid_codes)}
-            
-        if num_mov_codes > 1:
-            error_msg += unicode(_("You cannot give more than one movement code"))
-        
-        if error_msg:
-            message.respond(_("Error.  %(error)s") % \
-            { 'error': error_msg })
+        # read our fields
+        try:
+            fields = self.read_fields(optional_part)
+        except Exception, e:
+            # there were invalid fields, respond and exit
+            message.respond("%s" % e)
             return True
         
         # save the report
         report.save()
         
-        # then associate all the action codes with it
+        # then associate all our fields with it
         for field in fields:
             field.save()
             report.fields.add(field)            
@@ -286,42 +299,15 @@ class App (rapidsms.app.App):
         # Line below may be needed in case Risk reports are sent without previous Pregnancy reports
         location = message.reporter.location
         
-        
-        # add our action codes to the report
-
-        codes = optional_part.split()
-        fields = []
-        num_mov_codes = 0
-        invalid_codes = []
-        
-        for code in codes:
-            try:
-                field_type = FieldType.objects.get(key=code.lower())
-                fields.append(Field(type=field_type))
-                
-                # if the action code is a movement code, increment our counter
-                if field_type.category.id == 4:
-                    num_mov_codes += 1
-                   
-                                               
-            except FieldType.DoesNotExist:
-                 invalid_codes.append(code)
-
-
-        error_msg = ""
-        if len(invalid_codes) > 0:
-            error_msg += _("Unknown action code: %s.  ") % ", ".join(invalid_codes)
-            
-        if num_mov_codes > 1:
-            error_msg += _("You cannot give more than one movement code")
-        
-        if error_msg:
-            message.respond(_("Error.  %(error)s") % \
-            { 'error': error_msg })
+        # read our fields
+        try:
+            fields = self.read_fields(optional_part)
+        except Exception, e:
+            # there were invalid fields, respond and exit
+            message.respond("%s" % e)
             return True
-        
+
         # save the report
-        
         report.save()
         
         # then associate all the action codes with it
@@ -364,57 +350,15 @@ class App (rapidsms.app.App):
         
         Location = message.reporter.location
         
-        # Add field types in our report
-        codes = optional_part.split()
-        fields = []
-        num_mov_codes = 0
-        invalid_codes = []
-        
-        for code in codes:
-            try:
-                field_type = FieldType.objects.get(key=code.lower())
-                fields.append(Field(type=field_type))
-                
-                # if the action code is a movement code, increment our counter
-                if field_type.category.id == 4:
-                    num_mov_codes += 1
-                
-            except FieldType.DoesNotExist:
-                m1 = re.search("(\d+\.?\d*)K", code, re.IGNORECASE)
-                m2 = re.search("(\d+\.?\d*)cm", code, re.IGNORECASE)
-                
-                # this is a weight
-                if m1:
-                    field_type = FieldType.objects.get(key="child_weight")
-                    value = Decimal(m1.group(1))
-                    field = Field(type=field_type, value=value)
-                    fields.append(field)
-                    
-                # this is a length
-                elif m2:
-                    field_type = FieldType.objects.get(key="child_length")
-                    value = Decimal(m2.group(1))
-                    field = Field(type=field_type, value=value)
-                    fields.append(field)
-                    
-                # unknown, add to invalid codes
-                else:
-                    invalid_codes.append(code)
-                    
-        error_msg = ""
-        if len(invalid_codes) > 0:
-            error_msg += _("Unknown action code: %s.  ") % ", ".join(invalid_codes)
-            
-        if num_mov_codes > 1:
-            error_msg += _("You cannot give more than one movement code")
-        
-        if error_msg:
-            message.respond(_("Error.  %(error)s") % \
-            { 'error': error_msg })
+        # read our fields
+        try:
+            fields = self.read_fields(optional_part)
+        except Exception, e:
+            # there were invalid fields, respond and exit
+            message.respond("%s" % e)
             return True
-        
+
         # save the report
-        
         report.save()
         
         # then associate all the action codes with it
@@ -424,42 +368,26 @@ class App (rapidsms.app.App):
             
         message.respond(_("Thank you! Birth report submitted"))
         return True
-                
+    
+    @keyword("\s*last")
+    def last(self, message):
+        if not getattr(message, 'reporter', None):
+            message.respond("We dont recognize you, register first.")
+            return True
+    
+        reports = Report.objects.filter(reporter=message.reporter).order_by('-pk')
+    
+        if not reports:
+            message.respond("you have not yet sent any report")
+            return True
+    
+        report = reports[0]
         
+        fields = []
+        for field in report.fields.all().order_by('type'):
+            fields.append(unicode(field))
         
+        message.respond("type: %s patient: %s fields: %s" %  \
+            (report.type, report.patient, ", ".join(fields)))
         
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+        return True    

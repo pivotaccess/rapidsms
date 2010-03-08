@@ -80,7 +80,7 @@ class TestApp (TestScript):
         1 > pre 10003 1982 ma cl fe 21 
         1 < Error.  Unknown action code: 21.
         1 > pre
-        1 < The correct format message is  PRE PATIENT_ID DATE_BIRTH
+        1 < The correct format message is PRE PATIENT_ID DATE_BIRTH
                 
        
     """	
