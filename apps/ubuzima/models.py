@@ -61,10 +61,13 @@ class Field(models.Model):
     
 class Report(models.Model):
     reporter = models.ForeignKey(Reporter)
+    location = models.ForeignKey(Location)
+    village = models.CharField(max_length=255, null=True)
     fields = models.ManyToManyField(Field)
     patient = models.ForeignKey(Patient)
     type = models.ForeignKey(ReportType)
     child_dob = models.CharField(max_length=10, null=True)
+    created = models.DateTimeField(auto_now_add=True)
     
     def __unicode__(self):
         return "Report id: %d type: %s patient: %s child dob: %s" % (self.pk, self.type.name, self.patient.national_id, self.child_dob)

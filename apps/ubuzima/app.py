@@ -286,6 +286,14 @@ class App (rapidsms.app.App):
             patient.save()
             
         return patient
+    
+    def create_report(self, report_type_name, patient, reporter):
+        """Convenience for creating a new Report object from a reporter, patient and type """
+        
+        report_type = ReportType.objects.get(name=report_type_name)
+        report = Report(patient=patient, reporter=reporter, type=report_type,
+                        location=reporter.location, village=reporter.village)
+        return report
 
     @keyword("\s*pre(.*)")
     def pregnancy(self, message, notice):
@@ -310,8 +318,7 @@ class App (rapidsms.app.App):
         patient = self.get_or_create_patient(message.reporter, received_patient_id, dob)
         
         # create our report
-        report_type = ReportType.objects.get(name='Pregnancy')
-        report = Report(patient=patient, reporter=message.reporter, type=report_type)
+        report = self.create_report('Pregnancy', patient, message.reporter)
         
         # read our fields
         try:
@@ -356,8 +363,7 @@ class App (rapidsms.app.App):
         # get or create the patient
         patient = self.get_or_create_patient(message.reporter, received_patient_id)
 
-        report_type = ReportType.objects.get(name='Risk')
-        report = Report(patient=patient, reporter=message.reporter, type=report_type)
+        report = self.create_report('Risk', patient, message.reporter)
         
         # Line below may be needed in case Risk reports are sent without previous Pregnancy reports
         location = message.reporter.location
@@ -400,8 +406,7 @@ class App (rapidsms.app.App):
         # get or create the patient
         patient = self.get_or_create_patient(message.reporter, received_patient_id)
         
-        report_type = ReportType.objects.get(name='Birth')
-        report = Report(patient=patient, reporter=message.reporter, type=report_type)
+        report = self.create_report('Birth', patient, message.reporter)
         
         # read our fields
         try:
@@ -445,8 +450,7 @@ class App (rapidsms.app.App):
         # get or create the patient
         patient = self.get_or_create_patient(message.reporter, received_patient_id)
         
-        report_type = ReportType.objects.get(name='Child Health')
-        report = Report(patient=patient, reporter=message.reporter, type=report_type)
+        report = self.create_report('Child Health', patient, message.reporter)
         
         # read our fields
         try:
