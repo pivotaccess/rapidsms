@@ -1,0 +1,13 @@
+{% extends base_template %}
+{% block title %}Reports By Patient{% endblock %}
+
+{% block page_tabs %}
+<ul id="page-tabs">
+	<li class="page"><a href="/ubuzima">All Reports</a></li>
+</ul>
+{% endblock %}
+
+{% block content %}
+<h2>Reports for patient: {{patient.national_id}}</h2>
+{% include 'ubuzima/report_table.html' %} 
+{% endblock %}

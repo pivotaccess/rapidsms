@@ -1,0 +1,22 @@
+<table width="100%"> 
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Type</th>
+            <th>Reporter</th>
+            <th>Patient</th>
+            <th>Message</th>
+        </tr>
+    </thead>
+    <tbody>
+    	{% for report in reports.object_list %}
+            <tr>
+                <td>{{report.created|date:"d-M-Y H:m:s"}}</td>
+                <td><a href="/ubuzima/type/{{report.type.pk}}">{{report.type.name}}</a></td>
+                <td><a href="/ubuzima/reporter/{{report.reporter.pk}}">{{report.reporter.alias}}</a></td>
+                <td><a href="/ubuzima/patient/{{report.patient.pk}}">{{report.patient.national_id}}</a></td>
+                <td>{{report}}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
