@@ -9,4 +9,5 @@ urlpatterns = patterns('',
     url(r'^ubuzima/reporter/(?P<pk>\d+)$', views.by_reporter, name="by-reporter"),
     url(r'^ubuzima/patient/(?P<pk>\d+)$', views.by_patient, name="by-patient"),
     url(r'^ubuzima/type/(?P<pk>\d+)$', views.by_type, name="by-type"),
+    url(r'^ubuzima/report/(?P<pk>\d+)$', views.view_report, name="view-report"),
 )

@@ -39,7 +39,14 @@ def by_type(req, pk):
                               "ubuzima/type.html", { "type":    report_type,
                                                      "reports":    paginated(req, reports, prefix="rep") })
     
-    pass
+
+@require_http_methods(["GET"])
+def view_report(req, pk):
+    report = get_object_or_404(Report, pk=pk)
+    
+    return render_to_response(req,
+                              "ubuzima/report.html", { "report":    report })
+    
     
 @require_http_methods(["GET"])
 def by_reporter(req, pk):

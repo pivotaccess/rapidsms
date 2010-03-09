@@ -1,6 +1,7 @@
 <table width="100%"> 
     <thead>
         <tr>
+            <th>Id</th>
             <th>Date</th>
             <th>Type</th>
             <th>Reporter</th>
@@ -11,6 +12,7 @@
     <tbody>
     	{% for report in reports.object_list %}
             <tr>
+                <td><a href="/ubuzima/report/{{report.pk}}">{{report.pk}}</a></td>
                 <td>{{report.created|date:"d-M-Y H:m:s"}}</td>
                 <td><a href="/ubuzima/type/{{report.type.pk}}">{{report.type.name}}</a></td>
                 <td><a href="/ubuzima/reporter/{{report.reporter.pk}}">{{report.reporter.alias}}</a></td>
