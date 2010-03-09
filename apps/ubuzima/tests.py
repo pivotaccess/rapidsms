@@ -7,7 +7,7 @@ class TestApp (TestScript):
 
     fixtures = ("fosa_location_types", "fosa_test_locations", "groups", "reporting" )
 
-    ntestRegister = """
+    testRegister = """
         2 > reg 10 05
         2 < Unknown Health unit id: 05
         1 > reg asdf
@@ -42,7 +42,7 @@ class TestApp (TestScript):
 
     """
     
-    ntestSupervisor = """
+    testSupervisor = """
         1 > sup 23 05094 en    
         1 < Thank you for registering at Gashora 
         4 > WHO
