@@ -108,7 +108,7 @@ class TestApp (TestScript):
         2 > REG 08 01001 en
         2 < Thank you for registering at Biryogo
         2 > risk 1000 ho fe ma
-        2 < Always report Pregnancy before any risk report to a patient
+        2 < Thank you! Risk report submitted
         
         3 > risk 1000 ho fe ma
         3 < Get registered first
@@ -130,7 +130,7 @@ class TestApp (TestScript):
         1 > REG 08 05094 en
         1 < Thank you for registering at Gashora
         1 > bir 1234568 ho
-        1 < Always report Pregnancy before any birth report
+        1 < Thank you! Birth report submitted
         1 > pre 123459 1965 ho ma
         1 < Pregnancy report submitted successfully
         1 > bir 123459 ho 

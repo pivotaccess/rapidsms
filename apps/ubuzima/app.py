@@ -266,7 +266,22 @@ class App (rapidsms.app.App):
         
         return (fields, dob)
     
-    
+    def get_or_create_patient(self, reporter, national_id, dob=None):
+        """Takes care of searching our DB for the passed in patient.  Equality is determined
+           using the national id only (IE, dob doesn't come into play).  This will create a 
+           new patient with the passed in reporter if necessary."""
+           
+        # try to look up the patent by id
+        try:
+            patient = Patient.objects.get(national_id=national_id)
+        except Patient.DoesNotExist:
+            # not found?  create the patient instead
+            patient = Patient.objects.create(national_id=national_id,
+                                             location=reporter.location,
+                                             dob=dob)
+            
+        return patient
+
     @keyword("\s*pre(.*)")
     def pregnancy(self, message, notice):
         self.debug("PRE message: %s" % message.text)
@@ -285,9 +300,7 @@ class App (rapidsms.app.App):
         optional_part = m.group(3)
 
         # get or create the patient
-        patient, created = Patient.objects.get_or_create(national_id=received_patient_id,
-                                                         location=message.reporter.location,
-                                                         dob=dob)
+        patient = self.get_or_create_patient(message.reporter, received_patient_id, dob)
         
         # create our report
         report_type = ReportType.objects.get(name='Pregnancy')
@@ -331,14 +344,8 @@ class App (rapidsms.app.App):
         received_patient_id = m.group(1)
         optional_part = m.group(2)
         
-        # Create the report and link the particular patient to the report
-        # in case patient have never been registered, report Pregnancy first
-        try:
-            patient = Patient.objects.get(national_id=received_patient_id)
-                        
-        except Patient.DoesNotExist:
-            message.respond(_("Always report Pregnancy before any risk report to a patient"))
-            return True
+        # get or create the patient
+        patient = self.get_or_create_patient(message.reporter, received_patient_id)
 
         report_type = ReportType.objects.get(name='Risk')
         report = Report(patient=patient, reporter=message.reporter, type=report_type)
@@ -380,14 +387,8 @@ class App (rapidsms.app.App):
         received_patient_id = m.group(1)
         optional_part = m.group(2)
         
-        # Create the report and link the particular patient to the report
-        # in case the mother have never been registered, report Pregnancy first
-        try:
-            patient = Patient.objects.get(national_id=received_patient_id)
-                        
-        except Patient.DoesNotExist:
-            message.respond(_("Always report Pregnancy before any birth report"))
-            return True
+        # get or create the patient
+        patient = self.get_or_create_patient(message.reporter, received_patient_id)
         
         report_type = ReportType.objects.get(name='Birth')
         report = Report(patient=patient, reporter=message.reporter, type=report_type)
