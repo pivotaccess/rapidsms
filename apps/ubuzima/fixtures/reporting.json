@@ -30,6 +30,14 @@
     },
 
     {
+        "pk": 5,
+        "model": "ubuzima.reporttype",
+        "fields": {
+            "name": "Child Health"
+        }
+    },
+
+    {
         "pk": 1,
         "model": "ubuzima.fieldcategory",
         "fields": {
@@ -295,8 +303,8 @@
         "pk": 25,
         "model": "ubuzima.fieldtype",
         "fields": {
-            "key": "MUAC",
-	    "description": "muac",
+            "key": "muac",
+	    "description": "MUAC",
             "category": "1",
 	    "has_value": true
        }

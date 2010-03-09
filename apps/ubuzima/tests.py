@@ -7,7 +7,7 @@ class TestApp (TestScript):
 
     fixtures = ("fosa_location_types", "fosa_test_locations", "groups", "reporting" )
 
-    testRegister = """
+    ntestRegister = """
         2 > reg 10 05
         2 < Unknown Health unit id: 05
         1 > reg asdf
@@ -42,7 +42,7 @@ class TestApp (TestScript):
 
     """
     
-    testSupervisor = """
+    ntestSupervisor = """
         1 > sup 23 05094 en    
         1 < Thank you for registering at Gashora 
         4 > WHO
@@ -140,13 +140,40 @@ class TestApp (TestScript):
         1 > bir 123459 ho ma 5.43cm 3.2kg
         1 < Thank you! Birth report submitted
         1 > last
-        1 < type: Birth patient: 123459 (1965) fields: ma, ho, child_weight=3.20, child_length=5.43
+        1 < type: Birth patient: 123459 (1965) fields: ma, ho, child_weight=3.20, muac=5.43
         1 > bir 123459 ho ma 5.43cm 3.2kg 2010.4.10
         1 < Thank you! Birth report submitted
         1 > last
-        1 < type: Birth patient: 123459 (1965) ChildDOB: 2010.4.10 fields: ma, ho, child_weight=3.20, child_length=5.43
+        1 < type: Birth patient: 123459 (1965) ChildDOB: 2010.4.10 fields: ma, ho, child_weight=3.20, muac=5.43
        
-    """	
+    """    
+    
+    testChildHealth = """
+
+        1 > REG 08 05094 en
+        1 < Thank you for registering at Gashora
+        1 > pre 123459 1965 ho ma
+        1 < Pregnancy report submitted successfully
+        1 > chi 1234568 ho
+        1 < Thank you! Child health report submitted
+        1 > chi 123459 ho 
+        1 < Thank you! Child health report submitted
+        1 > chi 123459 ho ma 5.43k 3.2cm
+        1 < Thank you! Child health report submitted
+        1 > chi 123459 ho ma 5.43cm 3.2kg
+        1 < Thank you! Child health report submitted
+        1 > last
+        1 < type: Child Health patient: 123459 (1965) fields: ma, ho, child_weight=3.20, muac=5.43
+        1 > chi 123459 ho ma 5.43cm 3.2kg 2010.4.10
+        1 < Thank you! Child health report submitted
+        1 > last
+        1 < type: Child Health patient: 123459 (1965) ChildDOB: 2010.4.10 fields: ma, ho, child_weight=3.20, muac=5.43
+        1 > chi 12345 ho 3.3k
+        1 < Thank you! Child health report submitted
+        1 > last
+        1 < type: Child Health patient: 12345 fields: ho, child_weight=3.30
+       
+    """    
 
     # define your test scripts here.
     # e.g.:

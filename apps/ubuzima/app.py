@@ -234,7 +234,7 @@ class App (rapidsms.app.App):
                     
                 # this is a length
                 elif m2:
-                    field_type = FieldType.objects.get(key="child_length")
+                    field_type = FieldType.objects.get(key="muac")
                     value = Decimal(m2.group(1))
                     field = Field(type=field_type, value=value)
                     fields.append(field)
@@ -280,10 +280,17 @@ class App (rapidsms.app.App):
                                              location=reporter.location,
                                              dob=dob)
             
+        # if they sent in a dob this time, and we didn't have it before, set it
+        if dob and not patient.dob:
+            patient.dob = dob
+            patient.save()
+            
         return patient
 
     @keyword("\s*pre(.*)")
     def pregnancy(self, message, notice):
+        """Incoming pregnancy reports.  This registers a new mother as having an upcoming child"""
+
         self.debug("PRE message: %s" % message.text)
 
         if not getattr(message, 'reporter', None):
@@ -333,6 +340,8 @@ class App (rapidsms.app.App):
     
     @keyword("\s*risk(.*)")
     def risk(self, message, notice):
+        """Risk report, represents a possible problem with a pregnancy, can trigger alerts."""
+        
         if not getattr(message, 'reporter', None):
             message.respond(_("Get registered first"))
             return True
@@ -375,6 +384,7 @@ class App (rapidsms.app.App):
     #Birth keyword
     @keyword("\s*bir(.*)")
     def birth(self, message, notice):
+        """Birth report.  Sent when a new mother has a birth.  Can trigger alerts with particular action codes"""
         
         if not getattr(message, 'reporter', None):
             message.respond(_("Please,Get registered first, unknown Health agent"))
@@ -392,8 +402,6 @@ class App (rapidsms.app.App):
         
         report_type = ReportType.objects.get(name='Birth')
         report = Report(patient=patient, reporter=message.reporter, type=report_type)
-        
-        Location = message.reporter.location
         
         # read our fields
         try:
@@ -416,6 +424,51 @@ class App (rapidsms.app.App):
             report.fields.add(field)            
             
         message.respond(_("Thank you! Birth report submitted"))
+        return True
+    
+        #Birth keyword
+    @keyword("\s*chi(.*)")
+    def child(self, message, notice):
+        """Child health report.  Ideally should be on a child that was previously registered, but if not that's ok."""
+        
+        if not getattr(message, 'reporter', None):
+            message.respond(_("Please,Get registered first, unknown Health agent"))
+            return True
+            
+        m = re.search("chi\s+(\d+)(.*)", message.text, re.IGNORECASE)
+        if not m:
+            message.respond(_("The correct format message is CHI PATIENT_ID DOB MOVEMENT_CODES ACTION_CODES MUAC WEIGHT"))
+            return True
+        received_patient_id = m.group(1)
+        optional_part = m.group(2)
+        
+        # get or create the patient
+        patient = self.get_or_create_patient(message.reporter, received_patient_id)
+        
+        report_type = ReportType.objects.get(name='Child Health')
+        report = Report(patient=patient, reporter=message.reporter, type=report_type)
+        
+        # read our fields
+        try:
+            (fields, dob) = self.read_fields(optional_part, True)
+        except Exception, e:
+            # there were invalid fields, respond and exit
+            message.respond("%s" % e)
+            return True
+
+        # set the dob for the child if we got one
+        if dob:
+            report.child_dob = dob
+
+        # save the report
+        report.save()
+        
+        # then associate all the action codes with it
+        for field in fields:
+            field.save()
+            report.fields.add(field)            
+            
+        message.respond(_("Thank you! Child health report submitted"))
         return True
     
     @keyword("\s*last")
