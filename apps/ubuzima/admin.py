@@ -6,5 +6,7 @@ admin.site.register(ReportType)
 admin.site.register(Field)
 admin.site.register(FieldType)
 admin.site.register(Patient)
+admin.site.register(Alert)
+admin.site.register(AlertAction)
 
 

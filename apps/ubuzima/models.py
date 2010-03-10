@@ -40,13 +40,9 @@ class FieldType(models.Model):
 class Patient(models.Model):
     location = models.ForeignKey(Location)
     national_id = models.CharField(max_length=20, unique=True)
-    dob = models.CharField(max_length=10, null=True)
     
     def __unicode__(self):
-        if self.dob:
-            return "%s (%s)" % (self.national_id, self.dob)
-        else:
-            return "%s" % self.national_id
+        return "%s" % self.national_id
     
     
 class Field(models.Model):
@@ -66,10 +62,38 @@ class Report(models.Model):
     fields = models.ManyToManyField(Field)
     patient = models.ForeignKey(Patient)
     type = models.ForeignKey(ReportType)
-    child_dob = models.CharField(max_length=10, null=True)
+    
+    # meaning of this depends on report type.. arr, should really do this as a field, perhaps as a munged int?
+    date = models.CharField(max_length=10, null=True)
+    
     created = models.DateTimeField(auto_now_add=True)
     
     def __unicode__(self):
-        return "Report id: %d type: %s patient: %s child dob: %s" % (self.pk, self.type.name, self.patient.national_id, self.child_dob)
+        return "Report id: %d type: %s patient: %s date: %s" % (self.pk, self.type.name, self.patient.national_id, self.date)
     
+RECIPIENT_CHOICES = ( ('SUP', 'Supervisor'),
+                      ('CHW', 'Community Health Worker'),
+                      ('ALL', 'Community Health Worker and Supervisor') )    
+
+class AlertAction(models.Model):
+    recipient = models.CharField(max_length=3, choices=RECIPIENT_CHOICES)
+    message = models.CharField(max_length=160)
     
+    def __unicode__(self):
+        return "'%s' => %s" % (self.message, self.recipient)
+    
+class Alert(models.Model):
+    name = models.CharField(max_length=128)
+    description = models.TextField()
+    actions = models.ManyToManyField(AlertAction)
+    triggers = models.ManyToManyField(FieldType)
+    active = models.BooleanField(default=True)
+    
+    def trigger_summary(self):
+        return ", ".join(map(lambda t: t.description, self.triggers.all()))
+    
+    def recipients(self):
+        return ", ".join(map(lambda a: a.recipient, self.actions.all()))
+    
+    def __unicode__(self):
+        return self.name

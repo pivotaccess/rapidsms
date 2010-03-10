@@ -11,6 +11,7 @@ from decimal import *
 from exceptions import Exception
 import traceback
 from datetime import *
+from django.db.models import Q
 
 class App (rapidsms.app.App):
     
@@ -169,7 +170,7 @@ class App (rapidsms.app.App):
         """Tries to parse a string into some kind of date representation.  Note that we don't use Date objects
            to store things away, because we want to accept limited precision dates, ie, just the year if 
            necessary."""
-        
+           
         # simple #### date.. ie, 1987 or 87
         m3 = re.search("^(\d+)$", dob_string)
     
@@ -195,7 +196,7 @@ class App (rapidsms.app.App):
             
         return None
     
-    def read_fields(self, code_string, accept_date=False):
+    def read_fields(self, code_string, accept_date=False, weight_is_mothers=False):
         """Tries to parse all the fields according to our set of action and movement codes.  We also 
            try to figure out if certain fields are dates and stuff them in as well. """
         
@@ -227,7 +228,7 @@ class App (rapidsms.app.App):
                 
                 # this is a weight
                 if m1:
-                    field_type = FieldType.objects.get(key="child_weight")
+                    field_type = FieldType.objects.get(key="child_weight" if not weight_is_mothers else "mother_weight")
                     value = Decimal(m1.group(1))
                     field = Field(type=field_type, value=value)
                     fields.append(field)
@@ -266,7 +267,7 @@ class App (rapidsms.app.App):
         
         return (fields, dob)
     
-    def get_or_create_patient(self, reporter, national_id, dob=None):
+    def get_or_create_patient(self, reporter, national_id):
         """Takes care of searching our DB for the passed in patient.  Equality is determined
            using the national id only (IE, dob doesn't come into play).  This will create a 
            new patient with the passed in reporter if necessary."""
@@ -277,14 +278,8 @@ class App (rapidsms.app.App):
         except Patient.DoesNotExist:
             # not found?  create the patient instead
             patient = Patient.objects.create(national_id=national_id,
-                                             location=reporter.location,
-                                             dob=dob)
-            
-        # if they sent in a dob this time, and we didn't have it before, set it
-        if dob and not patient.dob:
-            patient.dob = dob
-            patient.save()
-            
+                                             location=reporter.location)
+                
         return patient
     
     def create_report(self, report_type_name, patient, reporter):
@@ -294,6 +289,55 @@ class App (rapidsms.app.App):
         report = Report(patient=patient, reporter=reporter, type=report_type,
                         location=reporter.location, village=reporter.village)
         return report
+    
+    def maybe_send_alert(self, report):
+        """Called whenever we get a new report.  We run a set of rules based on action codes to figure out
+           if an alert should be sent, sending it up to supervisors if necessary."""
+
+        types = []
+        for field in report.fields.all():
+            types.append(field.type.pk)
+               
+        # these are the alerts which may just be triggered by this report
+        alerts = Alert.objects.filter(triggers__in=types).distinct()
+
+        # alerts that should be triggered
+        activated = []
+            
+        # for each alert, see whether we should be triggered by it
+        for alert in alerts:
+            matching = True
+            
+            for trigger in alert.triggers.all():
+                found = False
+                for field in report.fields.all():
+                    if trigger.pk == field.type.pk:
+                        found = True
+                        break
+            
+                # not found?  this won't trigger
+                if not found:
+                    matching = False
+            
+            if matching:
+                activated.append(alert)
+                
+        # look up the supervisors for this CHW's clinic
+        group = ReporterGroup.objects.get(title='Supervisor')
+        sups = Reporter.objects.filter(location=report.location).filter(groups__in=group)
+                
+        # for each activated alert, send the appropriate message
+        for alert in activated:
+            # trigger each action
+            for action in alert.actions.all():
+                self.debug("triggering: %s" % alert.name)
+                
+                if action.recipient == 'CHW':
+                    message.respond(action.message)
+                elif action.recipient == 'SUP':
+                    for sup in sups:
+                        conn = sup.connection()
+                    
 
     @keyword("\s*pre(.*)")
     def pregnancy(self, message, notice):
@@ -305,33 +349,29 @@ class App (rapidsms.app.App):
             message.respond(_("You need to be registered first"))
             return True
 
-        m = re.search("pre\s+(\d+)\s+(\w+)(.*)", message.text, re.IGNORECASE)
+        m = re.search("pre\s+(\d+)\s+([0-9.]+)\s?(.*)", message.text, re.IGNORECASE)
         if not m:
-            message.respond(_("The correct format message is PRE PATIENT_ID DATE_BIRTH"))
+            message.respond(_("The correct format message is PRE PATIENT_ID LAST_MENSES"))
             return True
         
         received_patient_id = m.group(1)
-        dob = self.parse_dob(m.group(2))
+        last_menses = self.parse_dob(m.group(2))
         optional_part = m.group(3)
 
         # get or create the patient
-        patient = self.get_or_create_patient(message.reporter, received_patient_id, dob)
+        patient = self.get_or_create_patient(message.reporter, received_patient_id)
         
         # create our report
         report = self.create_report('Pregnancy', patient, message.reporter)
+        report.date = last_menses
         
         # read our fields
         try:
-            (fields, dob) = self.read_fields(optional_part)
+            (fields, dob) = self.read_fields(optional_part, False, True)
         except Exception, e:
             # there were invalid fields, respond and exit
             message.respond("%s" % e)
             return True
-        
-                
-        # if we got a dob, set it
-        if dob:
-            report.child_dob = dob
         
         # save the report
         report.save()
@@ -340,7 +380,10 @@ class App (rapidsms.app.App):
         for field in fields:
             field.save()
             report.fields.add(field)            
-            
+
+        # maybe send some alerts
+        #self.maybe_send_alert(report)
+
         message.respond(_("Pregnancy report submitted successfully"))
         
         return True
@@ -370,7 +413,7 @@ class App (rapidsms.app.App):
         
         # read our fields
         try:
-            (fields, dob) = self.read_fields(optional_part)
+            (fields, dob) = self.read_fields(optional_part, False, True)
         except Exception, e:
             # there were invalid fields, respond and exit
             message.respond("%s" % e)
@@ -382,7 +425,10 @@ class App (rapidsms.app.App):
         # then associate all the action codes with it
         for field in fields:
             field.save()
-            report.fields.add(field)            
+            report.fields.add(field)
+            
+        # maybe send some alerts
+        #self.maybe_send_alert(report)            
             
         message.respond(_("Thank you! Risk report submitted"))
         return True
@@ -418,7 +464,7 @@ class App (rapidsms.app.App):
 
         # set the dob for the child if we got one
         if dob:
-            report.child_dob = dob
+            report.date = dob
 
         # save the report
         report.save()
@@ -427,6 +473,9 @@ class App (rapidsms.app.App):
         for field in fields:
             field.save()
             report.fields.add(field)            
+        
+        # maybe send some alerts
+        #self.maybe_send_alert(report)            
             
         message.respond(_("Thank you! Birth report submitted"))
         return True
@@ -462,7 +511,7 @@ class App (rapidsms.app.App):
 
         # set the dob for the child if we got one
         if dob:
-            report.child_dob = dob
+            report.date = dob
 
         # save the report
         report.save()
@@ -471,6 +520,9 @@ class App (rapidsms.app.App):
         for field in fields:
             field.save()
             report.fields.add(field)            
+    
+        # maybe send some alerts
+        #self.maybe_send_alert(report)            
             
         message.respond(_("Thank you! Child health report submitted"))
         return True
@@ -495,7 +547,7 @@ class App (rapidsms.app.App):
         for field in report.fields.all().order_by('type'):
             fields.append(unicode(field))
             
-        dob = _(" ChildDOB: %(dob)s") % { 'dob': report.child_dob } if report.child_dob else ""
+        dob = _(" Date: %(date)s") % { 'date': report.date } if report.date else ""
         
         message.respond("type: %s patient: %s%s fields: %s" %
             (report.type, report.patient, dob, ", ".join(fields)))

@@ -319,5 +319,16 @@
 	    "has_value": true
        }
  
+   },
+   {
+        "pk": 27,
+        "model": "ubuzima.fieldtype",
+        "fields": {
+            "key": "mother_weight",
+	    "description": "Mother weight",
+            "category": "1",
+	    "has_value": true
+       }
+ 
    }
 ]

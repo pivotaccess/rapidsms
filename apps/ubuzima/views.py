@@ -49,3 +49,19 @@ def by_reporter(req, pk):
     return render_to_response(req,
                               "ubuzima/reporter.html", { "reports":    paginated(req, reports, prefix="rep"),
                                                          "reporter":   reporter })
+
+@require_http_methods(["GET"])
+def alerts(req):
+    alerts = Alert.objects.all()
+    
+    return render_to_response(req,
+                              'ubuzima/alerts.html', { 'alerts': paginated(req, alerts, prefix='al') } )
+    
+ 
+@require_http_methods(["GET"])
+def alert(req, pk):
+    alert = Alert.objects.get(pk=pk)
+    return render_to_response(req,
+                              'ubuzima/alert.html', { 'alert': alert })
+        
+    

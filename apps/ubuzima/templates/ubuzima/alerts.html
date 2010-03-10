@@ -1,0 +1,35 @@
+{% extends base_template %}
+
+{% block title %}Alerts{% endblock %}
+
+{% block page_tabs %}
+<ul id="page-tabs">
+	<li class="page"><a href="/ubuzima">Reports</a></li>
+	<li class="page active"><a href="/ubuzima/alerts">Alerts</a></li>
+</ul>
+{% endblock %}
+
+{% block content %}
+<a class="addlink" href="/admin/ubuzima/alert/add">Add Alert</a><br/> 
+
+<h2>Alerts</h2>
+<table width="100%"> 
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Triggers</th>
+            <th>Recipients</th>
+        </tr>
+    </thead>
+    <tbody>
+    	{% for alert in alerts.object_list %}
+            <tr>
+            	<td><a href="/ubuzima/alert/{{alert.pk}}">{{alert.name}}</a></td>
+                <td>{{alert.trigger_summary}}</td>
+                <td>{{alert.recipients}}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}
