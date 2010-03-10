@@ -10,5 +10,6 @@ urlpatterns = patterns('',
     url(r'^ubuzima/patient/(?P<pk>\d+)$', views.by_patient),
     url(r'^ubuzima/type/(?P<pk>\d+)$', views.by_type),
     url(r'^ubuzima/alerts$', views.alerts),
-    url(r'^ubuzima/alert/(?P<pk>\d+)$', views.alert)
+    url(r'^ubuzima/alert/(?P<pk>\d+)$', views.alert),
+    url(r'^ubuzima/report/(?P<pk>\d+)$', views.view_report)
 )

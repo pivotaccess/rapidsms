@@ -44,7 +44,7 @@ class App (rapidsms.app.App):
             try:
                 func, captures = results
                 return func(self, message, *captures)
-            except Exception as e:
+            except Exception, e:
                 self.debug("Error: %s %s" % (e, traceback.format_exc()))
                 print "Error: %s %s" % (e, traceback.format_exc())
                 message.respond(_("Unknown Error, please check message format and try again."))
