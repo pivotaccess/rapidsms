@@ -191,8 +191,24 @@ class App (rapidsms.app.App):
         # full date: DD.MM.YYYY
         m3 = re.search("^(\d+)(\.)(\d+)(\.)(\d+)", dob_string) 
         if m3:
-            # TODO: we could be a lot smarter about this, figuring out the actual years and dates
-            return dob_string
+            dd = m3.group(1)
+            mm = m3.group(2)
+            yyyy = m3.group(3)
+            
+            # make sure we are in the right format
+            if len(dd) > 2 or len(mm) > 2 or len(yyyy) > 4: 
+                raise Exception(_("Invalid date format, must be in the form: DD/MM/YYYY"))
+
+            # invalid month
+            if int(mm) > 12 or int(mm) < 1:
+                raise Exception(_("Invalid date format, must be in the form: DD/MM/YYYY"))
+            
+            # invalid day
+            if int(dd) > 31 or int(dd) < 1:
+                raise Exception(_("Invalid date format, must be in the form: DD/MM/YYYY"))
+            
+            # Otherwise, parse into our format
+            return "%02d.%02d.%04d" % (int(dd), int(mm), int(yyyy))
             
         return None
     
