@@ -18,13 +18,13 @@ from ubuzima.models import *
 def index(req):
     return render_to_response(req,
         "ubuzima/index.html", {
-        "reports": paginated(req, Report.objects.all(), prefix="rep")
+        "reports": paginated(req, Report.objects.all().order_by("-created"), prefix="rep")
     })
 
 @require_http_methods(["GET"])
 def by_patient(req, pk):
     patient = get_object_or_404(Patient, pk=pk)
-    reports = Report.objects.filter(patient=patient)
+    reports = Report.objects.filter(patient=patient).order_by("-created")
     
     return render_to_response(req,
                               "ubuzima/patient.html", { "patient":    patient,
@@ -33,7 +33,7 @@ def by_patient(req, pk):
 @require_http_methods(["GET"])
 def by_type(req, pk):
     report_type = get_object_or_404(ReportType, pk=pk)
-    reports = Report.objects.filter(type=report_type)
+    reports = Report.objects.filter(type=report_type).order_by("-created")
     
     return render_to_response(req,
                               "ubuzima/type.html", { "type":    report_type,
@@ -51,7 +51,7 @@ def view_report(req, pk):
 @require_http_methods(["GET"])
 def by_reporter(req, pk):
     reporter = Reporter.objects.get(pk=pk)
-    reports = Report.objects.filter(reporter=reporter)
+    reports = Report.objects.filter(reporter=reporter).order_by("-created")
     
     return render_to_response(req,
                               "ubuzima/reporter.html", { "reports":    paginated(req, reports, prefix="rep"),

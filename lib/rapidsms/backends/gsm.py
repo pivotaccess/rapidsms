@@ -17,8 +17,8 @@ from datetime import datetime
 POLL_INTERVAL=2 # num secs to wait between checking for inbound texts
 LOG_LEVEL_MAP = {
     'traffic':'info',
-    'read':'info',
-    'write':'info',
+    'read':'debug',
+    'write':'debug',
     'debug':'debug',
     'warn':'warning',
     'error':'error'
@@ -33,13 +33,14 @@ class Backend(Backend):
         the rapidsms logger
         
         """
+        
         logger_level = 'info'
         try:
             logger_level = LOG_LEVEL_MAP[level]
         except:
             # inbound level was bofus
             pass
-        
+
         if self.modem_logger is not None:
             self.modem_logger.write(self,logger_level,msg)
         else:
@@ -77,8 +78,7 @@ class Backend(Backend):
         try:
             self.modem.send_sms(
                 str(message.connection.identity),
-                message.text,
-                max_messages=self.max_csm)
+                message.text)
         except ValueError, err:
             # TODO: Pass this error info on to caller!
             self.error('Error sending message: %s' % err)
@@ -121,9 +121,14 @@ class Backend(Backend):
             time.sleep(POLL_INTERVAL)
     
     def start(self):
+    
+        print "initting modem: %s %s" % (self.modem_args, self.modem_kwargs)
+    
         self.modem = pygsm.GsmModem(
             *self.modem_args,
-            **self.modem_kwargs)
+            **self.modem_kwargs).boot()
+
+        print "model: %s" % self.modem
 
         # If we got the connection, call superclass to
         # start the run loop--it just sets self._running to True
