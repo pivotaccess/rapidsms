@@ -3,6 +3,7 @@
         <tr>
         	<th>Id</th>
             <th>Date</th>
+            <th>Location</th>
             <th>Type</th>
             <th>Reporter</th>
             <th>Patient</th>
@@ -14,6 +15,7 @@
             <tr>
             	<td><a href="/ubuzima/report/{{report.pk}}">{{report.pk}}</a></td>
                 <td>{{report.created|date:"d-M-Y H:m:s"}}</td>
+                <td>{{report.location.name}}</td>
                 <td><a href="/ubuzima/type/{{report.type.pk}}">{{report.type.name}}</a></td>
                 <td><a href="/ubuzima/reporter/{{report.reporter.pk}}">{{report.reporter.alias}}</a></td>
                 <td><a href="/ubuzima/patient/{{report.patient.pk}}">{{report.patient.national_id}}</a></td>
