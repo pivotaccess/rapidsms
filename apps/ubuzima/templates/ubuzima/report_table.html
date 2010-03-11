@@ -17,7 +17,7 @@
                 <td><a href="/ubuzima/type/{{report.type.pk}}">{{report.type.name}}</a></td>
                 <td><a href="/ubuzima/reporter/{{report.reporter.pk}}">{{report.reporter.alias}}</a></td>
                 <td><a href="/ubuzima/patient/{{report.patient.pk}}">{{report.patient.national_id}}</a></td>
-                <td>{{report}}</td>
+                <td>{{report.summary}}</td>
             </tr>
         {% endfor %}
     </tbody>

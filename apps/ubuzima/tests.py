@@ -9,11 +9,11 @@ class TestApp (TestScript):
 
     testRegister = """
         2 > reg 10 05
-        2 < Unknown Health unit id: 05
+        2 < Unknown Health Clinic ID: 05
         1 > reg asdf
-        1 < The correct message format is REG CHWID CLINICID
+        1 < The correct message format is: REG YOUR_ID CLINIC_ID LANG VILLAGE
         1 > reg 01 01
-        1 < Unknown Health unit id: 01
+        1 < Unknown Health Clinic ID: 01
         1 > reg 01 01001
         1 < Thank you for registering at Biryogo
         3 > REG 01 01001 
@@ -26,6 +26,10 @@ class TestApp (TestScript):
         4 > WHO
         4 < We don't recognize you
         5 > REG 08 01001 en
+        5 < Thank you for registering at Biryogo
+        5 > WHO
+        5 < You are a CHW, located at Biryogo, you speak English
+        5 > REG 08 01001 EN
         5 < Thank you for registering at Biryogo
         5 > WHO
         5 < You are a CHW, located at Biryogo, you speak English
@@ -51,82 +55,86 @@ class TestApp (TestScript):
         1 < You are a Supervisor, located at Gashora, you speak English
 
         2 > sup 34 048547 fr
-        2 < Unknown Health unit id: 048547
+        2 < Unknown Health Clinic ID: 048547
         3 > SUP 23 048547 fr
-        3 < Unknown Health unit id: 048547 
+        3 < Unknown Health Clinic ID: 048547
     """
     
     testPregnancy = """
         1 > pre 10003 1982
-        1 < You need to be registered first
+        1 < You need to be registered first, use the REG keyword
         1 > REG 08 01001 en
         1 < Thank you for registering at Biryogo
-        1 > pre 10003 10.4.2009
-        1 < Pregnancy report submitted successfully
+        1 > pre 10003 10.04.2009
+        1 < Thank you! Pregnancy report submitted successfully.
         1 > LAST
-        1 < type: Pregnancy patient: 10003 Date: 10.4.2009 fields:
-        1 > pre 10003 10.4.2009 68k
-        1 < Pregnancy report submitted successfully
+        1 < type: Pregnancy patient: 10003 Date: 10.04.2009 fields:
+        1 > pre 10003 10.04.2009 68kpp
+        1 < Thank you! Pregnancy report submitted successfully.
         1 > LAST
-        1 < type: Pregnancy patient: 10003 Date: 10.4.2009 fields: mother_weight=68.00
+        1 < type: Pregnancy patient: 10003 Date: 10.04.2009 fields: mother_weight=68.00
         1 > pre 10003 1982 ho ma fe 
-        1 < Pregnancy report submitted successfully
+        1 < Thank you! Pregnancy report submitted successfully.
+        1 > pre 10003 14.4.2010 ho ma fe 
+        1 < Thank you! Pregnancy report submitted successfully.
+        1 > pre 10003 14.14.2010 ho ma fe 
+        1 < Invalid date format, must be in the form: DD.MM.YYYY
         1 > pre 10003 1982 HO MA fe 
-        1 < Pregnancy report submitted successfully
+        1 < Thank you! Pregnancy report submitted successfully.
         1 > pre 10003 1982 ho xx fe
         1 < Error.  Unknown action code: xx.
         1 > pre 10003 1982 ho cl fe 
-        1 < Error.  You cannot give more than one movement code
+        1 < Error.  You cannot give more than one location code
         1 > pre 10003 1982 ho fe cl 
-        1 < Error.  You cannot give more than one movement code
+        1 < Error.  You cannot give more than one location code
         1 > Pre 10003 1982 ho cl fE 
-        1 < Error.  You cannot give more than one movement code
+        1 < Error.  You cannot give more than one location code
         1 > pre 10003 1982 ho cl fe 21
-        1 < Error.  Unknown action code: 21.  You cannot give more than one movement code
+        1 < Error.  Unknown action code: 21.  You cannot give more than one location code
         1 > pre 10003 1982 ma cl fe 21 
         1 < Error.  Unknown action code: 21.
         1 > pre
-        1 < The correct format message is PRE PATIENT_ID LAST_MENSES
+        1 < The correct format message is: PRE MOTHER_ID LAST_MENSES ACTION_CODE LOCATION_CODE MOTHER_WEIGHT
                 
        
     """	
     
     testRisk = """
         1 > risk 10003 ho
-        1 < Get registered first
+        1 < You need to be registered first, use the REG keyword
         1 > pre 10003 1982
-        1 < You need to be registered first
+        1 < You need to be registered first, use the REG keyword
         1 > REG 08 01001 en
         1 < Thank you for registering at Biryogo        
         1 > pre 10003 1982
-        1 < Pregnancy report submitted successfully
+        1 < Thank you! Pregnancy report submitted successfully.
         1 > last
         1 < type: Pregnancy patient: 10003 Date: 1982 fields: 
         1 > risk 10003 ho
-        1 < Thank you! Risk report submitted
+        1 < Thank you! Risk report submitted successfully.
         1 > last
         1 < type: Risk patient: 10003 fields: ho
         1 > risk 10003 ho 68k he
-        1 < Thank you! Risk report submitted
+        1 < Thank you! Risk report submitted successfully.
         1 > LAST
         1 < type: Risk patient: 10003 fields: he, ho, mother_weight=68.00
         
         2 > risk 1000 ho fe ma
-        2 < Get registered first
+        2 < You need to be registered first, use the REG keyword
         2 > REG 08 01001 en
         2 < Thank you for registering at Biryogo
         2 > risk 1000 ho fe ma
-        2 < Thank you! Risk report submitted
+        2 < Thank you! Risk report submitted successfully.
         
         3 > risk 1000 ho fe ma
-        3 < Get registered first
+        3 < You need to be registered first, use the REG keyword
         3 > REG 08 01001 en
         3 < Thank you for registering at Biryogo
         3 > risk
-        3 < The correct format message is  RISK PATIENT_ID
+        3 < The correct format message is: RISK MOTHER_ID ACTION_CODE LOCATION_CODE MOTHER_WEIGHT
         
         4 > risk 10004 ho
-        4 < Get registered first
+        4 < You need to be registered first, use the REG keyword
         
         
 
@@ -137,22 +145,22 @@ class TestApp (TestScript):
 
         1 > REG 08 05094 en
         1 < Thank you for registering at Gashora
-        1 > bir 1234568 ho
-        1 < Thank you! Birth report submitted
+        1 > bir 1234568 01 ho
+        1 < Thank you! Birth report submitted successfully.
         1 > pre 123459 1965 ho ma
-        1 < Pregnancy report submitted successfully
-        1 > bir 123459 ho 
-        1 < Thank you! Birth report submitted
-        1 > bir 123459 ho ma 5.43k 3.2cm
-        1 < Thank you! Birth report submitted
-        1 > bir 123459 ho ma 5.43cm 3.2kg
-        1 < Thank you! Birth report submitted
+        1 < Thank you! Pregnancy report submitted successfully.
+        1 > bir 123459 01
+        1 < Thank you! Birth report submitted successfully.
+        1 > bir 123459 01 ho ma 5.43k 3.2cm
+        1 < Thank you! Birth report submitted successfully.
+        1 > bir 123459 02 ho ma 5.43cm 3.2kg
+        1 < Thank you! Birth report submitted successfully.
         1 > last
-        1 < type: Birth patient: 123459 fields: ma, ho, child_weight=3.20, muac=5.43
-        1 > bir 123459 ho ma 5.43cm 3.2kg 10.4.2010
-        1 < Thank you! Birth report submitted
+        1 < type: Birth patient: 123459 fields: ma, ho, child_weight=3.20, muac=5.43, child_number=2.00
+        1 > bir 123459 03 ho ma 5.43cm 3.2kg 10.4.2010
+        1 < Thank you! Birth report submitted successfully.
         1 > last
-        1 < type: Birth patient: 123459 Date: 10.4.2010 fields: ma, ho, child_weight=3.20, muac=5.43
+        1 < type: Birth patient: 123459 Date: 10.04.2010 fields: ma, ho, child_weight=3.20, muac=5.43, child_number=3.00
        
     """    
     
@@ -161,25 +169,27 @@ class TestApp (TestScript):
         1 > REG 08 05094 en
         1 < Thank you for registering at Gashora
         1 > pre 123459 1965 ho ma
-        1 < Pregnancy report submitted successfully
-        1 > chi 1234568 ho
-        1 < Thank you! Child health report submitted
-        1 > chi 123459 ho 
-        1 < Thank you! Child health report submitted
-        1 > chi 123459 ho ma 5.43k 3.2cm
-        1 < Thank you! Child health report submitted
-        1 > chi 123459 ho ma 5.43cm 3.2kg
-        1 < Thank you! Child health report submitted
+        1 < Thank you! Pregnancy report submitted successfully.
+        1 > chi 1234568
+        1 < The correct format message is: CHI MOTHER_ID CHILD_NUM CHILD_DOB MOVEMENT_CODE ACTION_CODE MUAC WEIGHT
+        1 > chi 1234568 01 ho
+        1 < Thank you! Child health report submitted successfully.
+        1 > chi 123459 2 ho 
+        1 < Thank you! Child health report submitted successfully.
+        1 > chi 123459 3 ho ma 5.43k 3.2cm
+        1 < Thank you! Child health report submitted successfully.
+        1 > chi 123459 1 ho ma 5.43cm 3.2kg
+        1 < Thank you! Child health report submitted successfully.
         1 > last
-        1 < type: Child Health patient: 123459 fields: ma, ho, child_weight=3.20, muac=5.43
-        1 > chi 123459 ho ma 5.43cm 3.2kg 10.4.2010
-        1 < Thank you! Child health report submitted
+        1 < type: Child Health patient: 123459 fields: ma, ho, child_weight=3.20, muac=5.43, child_number=1.00
+        1 > chi 123459 01 ho ma 5.43cm 3.2kg 10.4.2010
+        1 < Thank you! Child health report submitted successfully.
         1 > last
-        1 < type: Child Health patient: 123459 Date: 10.4.2010 fields: ma, ho, child_weight=3.20, muac=5.43
-        1 > chi 12345 ho 3.3k
-        1 < Thank you! Child health report submitted
+        1 < type: Child Health patient: 123459 Date: 10.04.2010 fields: ma, ho, child_weight=3.20, muac=5.43, child_number=1.00
+        1 > chi 12345 4 ho 3.3k
+        1 < Thank you! Child health report submitted successfully.
         1 > last
-        1 < type: Child Health patient: 12345 fields: ho, child_weight=3.30
+        1 < type: Child Health patient: 12345 fields: ho, child_weight=3.30, child_number=4.00
        
     """    
 

@@ -13,6 +13,7 @@ import traceback
 from datetime import *
 from django.db.models import Q
 
+
 class App (rapidsms.app.App):
     
     # map of language code to language name
@@ -51,7 +52,7 @@ class App (rapidsms.app.App):
                 return True
         else:
             self.debug("NO MATCH FOR %s" % message.text)
-            message.respond(_("We don't recogniz this message"))
+            message.respond(_("Unknown keyword, please check message format and try again."))
             return True
     
     def cleanup (self, message):
@@ -77,9 +78,9 @@ class App (rapidsms.app.App):
         if not m:
             # give appropriate error message based on the incoming message type
             if keyword.lower() == 'SUP':
-                message.respond(_("The correct message format is SUP SUPID CLINICID or HOSPITALID"))
+                message.respond(_("The correct message format is: SUP YOUR_ID CLINIC_ID LANG VILLAGE"))
             else:
-                message.respond(_("The correct message format is REG CHWID CLINICID"))
+                message.respond(_("The correct message format is: REG YOUR_ID CLINIC_ID LANG VILLAGE"))
             return True
 
         received_nat_id = m.group(2)
@@ -101,7 +102,7 @@ class App (rapidsms.app.App):
         
         # not found?  That's an error
         if not clinic:
-            message.respond(_("Unknown Health unit id: %(clinic)s") % \
+            message.respond(_("Unknown Health Clinic ID: %(clinic)s") % \
                             { "clinic": received_clinic_id})
             return True
         
@@ -116,12 +117,11 @@ class App (rapidsms.app.App):
         group = ReporterGroup.objects.get(title=group_title)
         message.reporter.groups.add(group)
         
-        m2 = re.search("(.*)(fr|en|rw)(.*)", optional_part)
+        m2 = re.search("(.*)(fr|en|rw)(.*)", optional_part, re.IGNORECASE)
     
         lang = "rw"
         if m2:
-            lang = m2.group(2)
-            self.debug("Your prefered language is: %s" % lang) 
+            lang = m2.group(2).lower()
                         
             # build our new optional part, which is just the remaining stuff
             optional_part = ("%s %s" % (m2.group(1), m2.group(3))).strip()
@@ -189,23 +189,29 @@ class App (rapidsms.app.App):
                 return value
                     
         # full date: DD.MM.YYYY
-        m3 = re.search("^(\d+)(\.)(\d+)(\.)(\d+)", dob_string) 
+        m3 = re.search("^(\d+)\.(\d+)\.(\d+)$", dob_string) 
         if m3:
             dd = m3.group(1)
             mm = m3.group(2)
             yyyy = m3.group(3)
             
+            # print "%s = '%s' '%s' '%s'" % (dob_string, dd, mm, yyyy)
+            
             # make sure we are in the right format
             if len(dd) > 2 or len(mm) > 2 or len(yyyy) > 4: 
-                raise Exception(_("Invalid date format, must be in the form: DD/MM/YYYY"))
+                raise Exception(_("Invalid date format, must be in the form: DD.MM.YYYY"))
 
             # invalid month
             if int(mm) > 12 or int(mm) < 1:
-                raise Exception(_("Invalid date format, must be in the form: DD/MM/YYYY"))
+                raise Exception(_("Invalid date format, must be in the form: DD.MM.YYYY"))
             
             # invalid day
             if int(dd) > 31 or int(dd) < 1:
-                raise Exception(_("Invalid date format, must be in the form: DD/MM/YYYY"))
+                raise Exception(_("Invalid date format, must be in the form: DD.MM.YYYY"))
+            
+            # is the year in the future
+            if int(yyyy) > int(date.today().year):
+                raise Exception(_("Invalid date, cannot be in the future."))
             
             # Otherwise, parse into our format
             return "%02d.%02d.%04d" % (int(dd), int(mm), int(yyyy))
@@ -273,7 +279,7 @@ class App (rapidsms.app.App):
                 { 'invalidcode':  ", ".join(invalid_codes)}
             
         if num_mov_codes > 1:
-            error_msg += unicode(_("You cannot give more than one movement code"))
+            error_msg += unicode(_("You cannot give more than one location code"))
         
         if error_msg:
             error_msg = _("Error.  %(error)s") % { 'error': error_msg }
@@ -362,16 +368,23 @@ class App (rapidsms.app.App):
         self.debug("PRE message: %s" % message.text)
 
         if not getattr(message, 'reporter', None):
-            message.respond(_("You need to be registered first"))
+            message.respond(_("You need to be registered first, use the REG keyword"))
             return True
 
         m = re.search("pre\s+(\d+)\s+([0-9.]+)\s?(.*)", message.text, re.IGNORECASE)
         if not m:
-            message.respond(_("The correct format message is PRE PATIENT_ID LAST_MENSES"))
+            message.respond(_("The correct format message is: PRE MOTHER_ID LAST_MENSES ACTION_CODE LOCATION_CODE MOTHER_WEIGHT"))
             return True
         
         received_patient_id = m.group(1)
-        last_menses = self.parse_dob(m.group(2))
+        
+        try:
+            last_menses = self.parse_dob(m.group(2))
+        except Exception, e:
+            # date was invalid, respond
+            message.respond("%s" % e)
+            return True
+            
         optional_part = m.group(3)
 
         # get or create the patient
@@ -400,7 +413,7 @@ class App (rapidsms.app.App):
         # maybe send some alerts
         #self.maybe_send_alert(report)
 
-        message.respond(_("Pregnancy report submitted successfully"))
+        message.respond(_("Thank you! Pregnancy report submitted successfully."))
         
         return True
     
@@ -409,12 +422,12 @@ class App (rapidsms.app.App):
         """Risk report, represents a possible problem with a pregnancy, can trigger alerts."""
         
         if not getattr(message, 'reporter', None):
-            message.respond(_("Get registered first"))
+            message.respond(_("You need to be registered first, use the REG keyword"))
             return True
             
         m = re.search("risk\s+(\d+)(.*)", message.text, re.IGNORECASE)
         if not m:
-            message.respond(_("The correct format message is  RISK PATIENT_ID"))
+            message.respond(_("The correct format message is: RISK MOTHER_ID ACTION_CODE LOCATION_CODE MOTHER_WEIGHT"))
             return True
         received_patient_id = m.group(1)
         optional_part = m.group(2)
@@ -446,7 +459,7 @@ class App (rapidsms.app.App):
         # maybe send some alerts
         #self.maybe_send_alert(report)            
             
-        message.respond(_("Thank you! Risk report submitted"))
+        message.respond(_("Thank you! Risk report submitted successfully."))
         return True
     
     #Birth keyword
@@ -455,15 +468,16 @@ class App (rapidsms.app.App):
         """Birth report.  Sent when a new mother has a birth.  Can trigger alerts with particular action codes"""
         
         if not getattr(message, 'reporter', None):
-            message.respond(_("Please,Get registered first, unknown Health agent"))
+            message.respond(_("You need to be registered first, use the REG keyword"))
             return True
             
-        m = re.search("bir\s+(\d+)(.*)", message.text, re.IGNORECASE)
+        m = re.search("bir\s+(\d+)\s+(\d+)(.*)", message.text, re.IGNORECASE)
         if not m:
-            message.respond(_("The correct format message is BIR PATIENT_ID"))
+            message.respond(_("The correct format message is: BIR MOTHER_ID CHILD_NUM ACTION_CODE LOCATION_CODE CHILD_WEIGHT MUAC"))
             return True
         received_patient_id = m.group(1)
-        optional_part = m.group(2)
+        received_child_num = m.group(2)
+        optional_part = m.group(3)
         
         # get or create the patient
         patient = self.get_or_create_patient(message.reporter, received_patient_id)
@@ -481,6 +495,10 @@ class App (rapidsms.app.App):
         # set the dob for the child if we got one
         if dob:
             report.date = dob
+            
+        # set the child number
+        child_num_type = FieldType.objects.get(key='child_number')
+        fields.append(Field(type=child_num_type, value=Decimal(received_child_num)))
 
         # save the report
         report.save()
@@ -493,7 +511,7 @@ class App (rapidsms.app.App):
         # maybe send some alerts
         #self.maybe_send_alert(report)            
             
-        message.respond(_("Thank you! Birth report submitted"))
+        message.respond(_("Thank you! Birth report submitted successfully."))
         return True
     
         #Birth keyword
@@ -502,15 +520,16 @@ class App (rapidsms.app.App):
         """Child health report.  Ideally should be on a child that was previously registered, but if not that's ok."""
         
         if not getattr(message, 'reporter', None):
-            message.respond(_("Please,Get registered first, unknown Health agent"))
+            message.respond(_("You need to be registered first, use the REG keyword"))
             return True
             
-        m = re.search("chi\s+(\d+)(.*)", message.text, re.IGNORECASE)
+        m = re.search("chi\s+(\d+)\s+(\d+)(.*)", message.text, re.IGNORECASE)
         if not m:
-            message.respond(_("The correct format message is CHI PATIENT_ID DOB MOVEMENT_CODES ACTION_CODES MUAC WEIGHT"))
+            message.respond(_("The correct format message is: CHI MOTHER_ID CHILD_NUM CHILD_DOB MOVEMENT_CODE ACTION_CODE MUAC WEIGHT"))
             return True
         received_patient_id = m.group(1)
-        optional_part = m.group(2)
+        received_child_num = m.group(2)
+        optional_part = m.group(3)
         
         # get or create the patient
         patient = self.get_or_create_patient(message.reporter, received_patient_id)
@@ -529,6 +548,10 @@ class App (rapidsms.app.App):
         if dob:
             report.date = dob
 
+        # set the child number
+        child_num_type = FieldType.objects.get(key='child_number')
+        fields.append(Field(type=child_num_type, value=Decimal(received_child_num)))
+
         # save the report
         report.save()
         
@@ -540,7 +563,7 @@ class App (rapidsms.app.App):
         # maybe send some alerts
         #self.maybe_send_alert(report)            
             
-        message.respond(_("Thank you! Child health report submitted"))
+        message.respond(_("Thank you! Child health report submitted successfully."))
         return True
     
     @keyword("\s*last")
@@ -548,13 +571,13 @@ class App (rapidsms.app.App):
         """Echos the last report that was sent for this report.  This is primarily used for unit testing"""
         
         if not getattr(message, 'reporter', None):
-            message.respond(_("We dont recognize you, register first."))
+            message.respond(_("You need to be registered first, use the REG keyword"))
             return True
     
         reports = Report.objects.filter(reporter=message.reporter).order_by('-pk')
     
         if not reports:
-            message.respond(_("you have not yet sent any report"))
+            message.respond(_("You have not yet sent a report."))
             return True
     
         report = reports[0]

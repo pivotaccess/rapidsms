@@ -71,6 +71,9 @@ class Report(models.Model):
     def __unicode__(self):
         return "Report id: %d type: %s patient: %s date: %s" % (self.pk, self.type.name, self.patient.national_id, self.date)
     
+    def summary(self):
+        return ", ".join(map(lambda f: unicode(f), self.fields.all()))
+    
 RECIPIENT_CHOICES = ( ('SUP', 'Supervisor'),
                       ('CHW', 'Community Health Worker'),
                       ('ALL', 'Community Health Worker and Supervisor') )    

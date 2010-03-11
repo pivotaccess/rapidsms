@@ -169,7 +169,7 @@
         "pk": 11,
         "model": "ubuzima.fieldtype",
         "fields": {
-            "key": "un",
+            "key": "sc",
 	    "description": "Perceived serious but cause unknown",
             "category": "3"
        }
@@ -300,6 +300,17 @@
  
    },
    {
+        "pk": 44,
+        "model": "ubuzima.fieldtype",
+        "fields": {
+            "key": "child_number",
+	    "description": "Child Number",
+            "category": "1",
+	    "has_value": true
+       }
+ 
+   },
+   {
         "pk": 25,
         "model": "ubuzima.fieldtype",
         "fields": {
@@ -328,6 +339,166 @@
 	    "description": "Mother weight",
             "category": "1",
 	    "has_value": true
+       }
+ 
+   },
+   {
+        "pk": 28,
+        "model": "ubuzima.fieldtype",
+        "fields": {
+            "key": "vo",
+	    "description": "Vomiting",
+            "category": "3"
+       }
+ 
+   },
+   {
+        "pk": 29,
+        "model": "ubuzima.fieldtype",
+        "fields": {
+            "key": "co",
+	    "description": "Convulsions",
+            "category": "3"
+       }
+ 
+   },
+   {
+        "pk": 30,
+        "model": "ubuzima.fieldtype",
+        "fields": {
+            "key": "sa",
+	    "description": "Severe Anemia",
+            "category": "3"
+       }
+ 
+   },
+   {
+        "pk": 31,
+        "model": "ubuzima.fieldtype",
+        "fields": {
+            "key": "ch",
+	    "description": "Coughing",
+            "category": "3"
+       }
+ 
+   },
+   {
+        "pk": 32,
+        "model": "ubuzima.fieldtype",
+        "fields": {
+            "key": "un",
+	    "description": "Unconscious",
+            "category": "3"
+       }
+ 
+   },
+   {
+        "pk": 33,
+        "model": "ubuzima.fieldtype",
+        "fields": {
+            "key": "oe",
+	    "description": "Oedema",
+            "category": "3"
+       }
+ 
+   },
+   {
+        "pk": 34,
+        "model": "ubuzima.fieldtype",
+        "fields": {
+            "key": "np",
+	    "description": "No Problem",
+            "category": "3"
+       }
+ 
+   },
+   {
+        "pk": 35,
+        "model": "ubuzima.fieldtype",
+        "fields": {
+            "key": "fp",
+	    "description": "Flaccid Paralysis",
+            "category": "3"
+       }
+ 
+   },
+   {
+        "pk": 36,
+        "model": "ubuzima.fieldtype",
+        "fields": {
+            "key": "ns",
+	    "description": "Neck Stiffness",
+            "category": "3"
+       }
+ 
+   },
+   {
+        "pk": 37,
+        "model": "ubuzima.fieldtype",
+        "fields": {
+            "key": "cm",
+	    "description": "Congenital Malfunction",
+            "category": "3"
+       }
+ 
+   },
+   {
+        "pk": 38,
+        "model": "ubuzima.fieldtype",
+        "fields": {
+            "key": "ja",
+	    "description": "Jaundice",
+            "category": "3"
+       }
+ 
+   },
+   {
+        "pk": 39,
+        "model": "ubuzima.fieldtype",
+        "fields": {
+            "key": "af",
+	    "description": "Abnormal Fontanel",
+            "category": "3"
+       }
+ 
+   },
+   {
+        "pk": 40,
+        "model": "ubuzima.fieldtype",
+        "fields": {
+            "key": "pc",
+	    "description": "Premature Contraction",
+            "category": "3"
+       }
+ 
+   },
+   {
+        "pk": 41,
+        "model": "ubuzima.fieldtype",
+        "fields": {
+            "key": "sl",
+	    "description": "Stroke Labor",
+            "category": "3"
+       }
+ 
+   },
+   {
+        "pk": 42,
+        "model": "ubuzima.fieldtype",
+        "fields": {
+            "key": "ds",
+	    "description": "Chronic Disease",
+            "category": "3"
+       }
+ 
+   },
+   {
+        "pk": 43,
+        "model": "ubuzima.fieldtype",
+        "fields": {
+            "key": "ps",
+	    "description": "Labor on Previous Cesarian Section",
+            "category": "3"
        }
  
    }
