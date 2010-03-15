@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-03-10 22:35-0800\n"
+"POT-Creation-Date: 2010-03-12 11:07+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -35,59 +35,66 @@ msgstr "wagombye kwandika: SUP YOUR_ID CLINIC_ID LANG VILLAGE"
 msgid "The correct message format is: REG YOUR_ID CLINIC_ID LANG VILLAGE"
 msgstr "wagombye kwandika: SUP YOUR_ID CLINIC_ID LANG VILLAGE"
 
-#: app.py:105
+#: app.py:89
+#, python-format
+msgid ""
+"Error.  National ID must be exactly 16 digits, you sent the id: %(nat_id)s"
+msgstr ""
+"Ikosa. Nomero y'irangamuntu igomba kugira imibare 16, wohereje %(nat_id)s"
+
+#: app.py:111
 #, python-format
 msgid "Unknown Health Clinic ID: %(clinic)s"
 msgstr "Iyi nimero y'ibitaro ntizwi: %(clinic)s"
 
-#: app.py:142
+#: app.py:148
 #, python-format
 msgid "Thank you for registering at %(clinic)s"
 msgstr "Murakoze kwiyandikisha kuri iki kigo nderabuzima %(clinic)s"
 
-#: app.py:154
+#: app.py:160
 #, python-format
 msgid "You are not in a group, located at %(location)s, you speak %(language)s"
 msgstr ""
 "You are not in a group, located at %(location)s, you speak %(language)s"
 
-#: app.py:161
+#: app.py:167
 #, python-format
 msgid "You are a %(group)s, located at %(location)s, you speak %(language)s"
 msgstr "You are a %(group)s, located at %(location)s, you speak %(language)s"
 
-#: app.py:165
+#: app.py:171
 msgid "We don't recognize you"
 msgstr "Ntabwo dusobanukiwe, ntibyumvikana"
 
-#: app.py:202 app.py:206 app.py:210
+#: app.py:208 app.py:212 app.py:216
 msgid "Invalid date format, must be in the form: DD.MM.YYYY"
 msgstr "Itariki ntabwo yanditswe neza, andika: Umunsi.Ukwezi.Umwaka"
 
-#: app.py:214
+#: app.py:220
 msgid "Invalid date, cannot be in the future."
 msgstr "Andika neza itariki"
 
-#: app.py:278
+#: app.py:284
 #, python-format
 msgid "Unknown action code: %(invalidcode)s.  "
 msgstr ""
 "Ibyo kureba no kwitabwaho bikurikira ntibyanditswe neza: %(invalidcode)s.   "
 
-#: app.py:282
+#: app.py:288
 msgid "You cannot give more than one location code"
 msgstr "ntushobora gutanga ahantu habiri aho byabereye "
 
-#: app.py:285
+#: app.py:291
 #, python-format
 msgid "Error.  %(error)s"
 msgstr "Ibibazo!  %(error)s"
 
-#: app.py:371 app.py:425 app.py:471 app.py:523 app.py:574
+#: app.py:377 app.py:431 app.py:477 app.py:529 app.py:580
 msgid "You need to be registered first, use the REG keyword"
 msgstr "Ugomba kubanza kwiyandikisha, koresha ijambo REG"
 
-#: app.py:376
+#: app.py:382
 msgid ""
 "The correct format message is: PRE MOTHER_ID LAST_MENSES ACTION_CODE "
 "LOCATION_CODE MOTHER_WEIGHT"
@@ -95,11 +102,11 @@ msgstr ""
 "Wagombye kwandika: PRE INDANGAMUNTU_UMUBYEBYI ITARIKI_YANYUMA_Y_IMIHANGO "
 "IBIMENYETSO AHO_AHEREREYE IBIRO"
 
-#: app.py:416
+#: app.py:422
 msgid "Thank you! Pregnancy report submitted successfully."
 msgstr "Murakoze, ubutumwa bwatugezeho"
 
-#: app.py:430
+#: app.py:436
 msgid ""
 "The correct format message is: RISK MOTHER_ID ACTION_CODE LOCATION_CODE "
 "MOTHER_WEIGHT"
@@ -107,11 +114,11 @@ msgstr ""
 "Wagombye kwandika: RISK INDANGAMUNTU_UMUBYEBYI IBIMENYETSO AHO_AHEREREYE "
 "IBIRO"
 
-#: app.py:462
+#: app.py:468
 msgid "Thank you! Risk report submitted successfully."
 msgstr "MURAKOZE, ubutumwa ku kibazo k'umubyeyi bwatugezeho"
 
-#: app.py:476
+#: app.py:482
 #, fuzzy
 msgid ""
 "The correct format message is: BIR MOTHER_ID CHILD_NUM ACTION_CODE "
@@ -120,11 +127,11 @@ msgstr ""
 "Wagombye kwandika: BIR INDANGAMUNTU_UMUBYEBYI IBIMENYETSO AHO_AHEREREYE "
 "IBIRO_BY_UMWANA MUAC"
 
-#: app.py:514
+#: app.py:520
 msgid "Thank you! Birth report submitted successfully."
 msgstr "Murakoze, ubutumwa bw'ubuzima bw'umwana bwatugezeho"
 
-#: app.py:528
+#: app.py:534
 #, fuzzy
 msgid ""
 "The correct format message is: CHI MOTHER_ID CHILD_NUM CHILD_DOB "
@@ -133,15 +140,15 @@ msgstr ""
 "Wagombye kwandika: CHI INDANGAMUNTU_UMUBYEBYI ITALIKI_YO_KUVUKA IBIMENYETSO "
 "AHO_AHEREREYE IBIRO_BY_UMWANA MUAC"
 
-#: app.py:566
+#: app.py:572
 msgid "Thank you! Child health report submitted successfully."
 msgstr "Murakoze, ubutumwa bw'ubuzima bw'umwana bwatugezeho"
 
-#: app.py:580
+#: app.py:586
 msgid "You have not yet sent a report."
 msgstr "Nta raporo yanyu duherutse kubona"
 
-#: app.py:589
+#: app.py:595
 #, fuzzy, python-format
 msgid " Date: %(date)s"
 msgstr "Itariki: %(date)s"

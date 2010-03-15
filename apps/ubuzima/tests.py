@@ -8,40 +8,40 @@ class TestApp (TestScript):
     fixtures = ("fosa_location_types", "fosa_test_locations", "groups", "reporting" )
 
     testRegister = """
-        2 > reg 10 05
+        2 > reg 1234567890123456 05
         2 < Iyi nimero y'ibitaro ntizwi: 05
         1 > reg asdf
         1 < The correct message format is: REG YOUR_ID CLINIC_ID LANG VILLAGE
-        1 > reg 01 01
+        1 > reg 1234567890123456 01
         1 < Iyi nimero y'ibitaro ntizwi: 01
-        1 > reg 01 01001 en
+        1 > reg 1234567890123456 01001 en
         1 < Thank you for registering at Biryogo
-        3 > REG 01 01001 en
+        3 > REG 1234567890123456 01001 en
         3 < Thank you for registering at Biryogo
 
         # testing the default language
-        30 > REG 01 01001
+        30 > REG 1234567890123456 01001
         30 < Murakoze kwiyandikisha kuri iki kigo nderabuzima Biryogo
         30 > WHO
         30 < You are a CHW, located at Biryogo, you speak Kinyarwanda
 
         4 > WHO
         4 < Ntabwo dusobanukiwe, ntibyumvikana
-        5 > REG 08 01001 en
+        5 > REG 1234567890123458 01001 en
         5 < Thank you for registering at Biryogo
         5 > WHO
         5 < You are a CHW, located at Biryogo, you speak English
-        5 > REG 08 01001 EN
+        5 > REG 1234567890123458 01001 EN
         5 < Thank you for registering at Biryogo
         5 > WHO
         5 < You are a CHW, located at Biryogo, you speak English
 
         # village names
-        4 > REG 01 01001 en foo
+        4 > REG 1234567890123459 01001 en foo
         4 < Thank you for registering at Biryogo
         4 > WHO
         4 < You are a CHW, located at Biryogo (foo), you speak English
-        5 > REG 01 01001 foo en
+        5 > REG 1234567890123459 01001 foo en
         5 < Thank you for registering at Biryogo
         5 > WHO
         5 < You are a CHW, located at Biryogo (foo), you speak English
@@ -49,28 +49,28 @@ class TestApp (TestScript):
     """
     
     testSupervisor = """
-        1 > sup 23 05094 en    
+        1 > sup 1234567890123456 05094 en    
         1 < Thank you for registering at Gashora 
         4 > WHO
         4 < Ntabwo dusobanukiwe, ntibyumvikana
         1 > who   
         1 < You are a Supervisor, located at Gashora, you speak English
 
-        2 > sup 34 048547 fr
+        2 > sup 1234567890123451 048547 fr
         2 < Iyi nimero y'ibitaro ntizwi: 048547
-        3 > SUP 23 048547 fr
+        3 > SUP 1234567890123452 048547 fr
         3 < Iyi nimero y'ibitaro ntizwi: 048547
     """
     
     testCC = """
-        101 > reg 500 05094 en
+        101 > reg 2234567890123456 05094 en
         101 < Thank you for registering at Gashora
-        102 > sup 501 05094 en
+        102 > sup 3234567890123456 05094 en
         102 < Thank you for registering at Gashora
         101 > bir 101 01 bo
         101 < Thank you! Birth report submitted successfully.
         102 < 101: bir 101 01 bo
-        103 > sup 502 05094 en 
+        103 > sup 4234567890123456 05094 en 
         103 < Thank you for registering at Gashora
         101 > bir 101 01 bo
         101 < Thank you! Birth report submitted successfully.
@@ -79,9 +79,9 @@ class TestApp (TestScript):
     """
     
     testPregnancy = """
-        1 > pre 10003 1982
+        1 > pre 4234567890123456 1982
         1 < Ugomba kubanza kwiyandikisha, koresha ijambo REG
-        1 > REG 08 01001 en
+        1 > REG 4234567890123456 01001 en
         1 < Thank you for registering at Biryogo
         1 > pre 10003 10.04.2009
         1 < Thank you! Pregnancy report submitted successfully.
@@ -122,7 +122,7 @@ class TestApp (TestScript):
         1 < Ugomba kubanza kwiyandikisha, koresha ijambo REG
         1 > pre 10003 1982
         1 < Ugomba kubanza kwiyandikisha, koresha ijambo REG
-        1 > REG 08 01001 en
+        1 > REG 4234567890123456 01001 en
         1 < Thank you for registering at Biryogo        
         1 > pre 10003 1982
         1 < Thank you! Pregnancy report submitted successfully.
@@ -139,14 +139,14 @@ class TestApp (TestScript):
         
         2 > risk 1000 ho fe ma
         2 < Ugomba kubanza kwiyandikisha, koresha ijambo REG
-        2 > REG 08 01001 en
+        2 > REG 4234567890123456 01001 en
         2 < Thank you for registering at Biryogo
         2 > risk 1000 ho fe ma
         2 < Thank you! Risk report submitted successfully.
         
         3 > risk 1000 ho fe ma
         3 < Ugomba kubanza kwiyandikisha, koresha ijambo REG
-        3 > REG 08 01001 en
+        3 > REG 4234567890123456 01001 en
         3 < Thank you for registering at Biryogo
         3 > risk
         3 < The correct format message is: RISK MOTHER_ID ACTION_CODE LOCATION_CODE MOTHER_WEIGHT
@@ -161,7 +161,7 @@ class TestApp (TestScript):
     
     testBirth = """
 
-        1 > REG 08 05094 en
+        1 > REG 4234567890123456 05094 en
         1 < Thank you for registering at Gashora
         1 > bir 1234568 01 ho
         1 < Thank you! Birth report submitted successfully.
@@ -184,7 +184,7 @@ class TestApp (TestScript):
     
     testChildHealth = """
 
-        1 > REG 08 05094 en
+        1 > REG 4234567890123456 05094 en
         1 < Thank you for registering at Gashora
         1 > pre 123459 1965 ho ma
         1 < Thank you! Pregnancy report submitted successfully.
