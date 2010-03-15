@@ -84,6 +84,12 @@ class App (rapidsms.app.App):
             return True
 
         received_nat_id = m.group(2)
+        
+        if len(received_nat_id) != 16:
+            message.respond(_("Error.  National ID must be exactly 16 digits, you sent the id: %(nat_id)s") % 
+                            { "nat_id": received_nat_id } )
+            return True
+        
         received_clinic_id = m.group(3)
         optional_part = m.group(4)
         

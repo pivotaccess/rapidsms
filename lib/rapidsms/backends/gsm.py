@@ -17,9 +17,9 @@ from datetime import datetime
 POLL_INTERVAL=2 # num secs to wait between checking for inbound texts
 LOG_LEVEL_MAP = {
     'traffic':'info',
-    'read':'debug',
-    'write':'debug',
-    'debug':'debug',
+    'read':'info',
+    'write':'info',
+    'debug':'info',
     'warn':'warning',
     'error':'error'
 }
@@ -86,9 +86,12 @@ class Backend(Backend):
     def run(self):
         while self._running:
             # check for new messages
-            msg = self.modem.next_message()
-        
+            msg = self.modem.next_message(True)
+            
             if msg is not None:
+#                self.error("index: %s" % msg.index)
+#                self._log( self.modem, "index: %s" % msg.index, "info")
+            
                 # we got an sms! create RapidSMS Connection and
                 # Message objects, and hand it off to the router 
                 c = Connection(self, msg.sender)
@@ -108,6 +111,10 @@ class Backend(Backend):
                             )
                 self.router.send(m)
                 
+                # remove the message
+                if msg.index:
+                    self.modem.command("AT+CMGD=%s" % msg.index)
+                
             # process all outbound messages
             while True:
                 try:
@@ -119,6 +126,7 @@ class Backend(Backend):
             # poll for new messages
             # every POLL_INTERVAL seconds
             time.sleep(POLL_INTERVAL)
+            self.modem.command("AT+CPMS?")
     
     def start(self):
     
@@ -128,7 +136,8 @@ class Backend(Backend):
             *self.modem_args,
             **self.modem_kwargs).boot()
 
-        print "model: %s" % self.modem
+        # set our service center
+        self.modem.service_center = "+250788110333"
 
         # If we got the connection, call superclass to
         # start the run loop--it just sets self._running to True
