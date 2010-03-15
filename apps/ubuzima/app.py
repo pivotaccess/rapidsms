@@ -372,7 +372,7 @@ class App (rapidsms.app.App):
         
         # now look up to see if we have any reporters in this group with the same location as 
         # our reporter
-        sups = Reporter.objects.filter(groups=sup_group, location=message.reporter.location)
+        sups = Reporter.objects.filter(groups=sup_group, location=message.reporter.location).order_by("pk")
         
         # reporter identity
         reporter_ident = message.reporter.connection().identity
