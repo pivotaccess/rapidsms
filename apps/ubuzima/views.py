@@ -58,17 +58,18 @@ def by_reporter(req, pk):
                                                          "reporter":   reporter })
 
 @require_http_methods(["GET"])
-def alerts(req):
-    alerts = Alert.objects.all()
+def advices(req):
+    advices = AdviceText.objects.all()
     
     return render_to_response(req,
-                              'ubuzima/alerts.html', { 'alerts': paginated(req, alerts, prefix='al') } )
+                              'ubuzima/advices.html', { 'advices': paginated(req, advices, prefix='ad') } )
     
  
 @require_http_methods(["GET"])
-def alert(req, pk):
-    alert = Alert.objects.get(pk=pk)
+def advice(req, pk):
+    advice = AdviceText.objects.get(pk=pk)
+    
     return render_to_response(req,
-                              'ubuzima/alert.html', { 'alert': alert })
+                              'ubuzima/advice.html', { 'advice': advice })
         
     

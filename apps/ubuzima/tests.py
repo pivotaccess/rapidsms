@@ -9,22 +9,24 @@ class TestApp (TestScript):
 
     testRegister = """
         2 > reg 10 05
-        2 < Unknown Health Clinic ID: 05
+        2 < Iyi nimero y'ibitaro ntizwi: 05
         1 > reg asdf
         1 < The correct message format is: REG YOUR_ID CLINIC_ID LANG VILLAGE
         1 > reg 01 01
-        1 < Unknown Health Clinic ID: 01
-        1 > reg 01 01001
+        1 < Iyi nimero y'ibitaro ntizwi: 01
+        1 > reg 01 01001 en
         1 < Thank you for registering at Biryogo
-        3 > REG 01 01001 
+        3 > REG 01 01001 en
         3 < Thank you for registering at Biryogo
 
         # testing the default language
-        3 > WHO
-        3 < You are a CHW, located at Biryogo, you speak Kinyarwanda
+        30 > REG 01 01001
+        30 < Murakoze kwiyandikisha kuri iki kigo nderabuzima Biryogo
+        30 > WHO
+        30 < You are a CHW, located at Biryogo, you speak Kinyarwanda
 
         4 > WHO
-        4 < We don't recognize you
+        4 < Ntabwo dusobanukiwe, ntibyumvikana
         5 > REG 08 01001 en
         5 < Thank you for registering at Biryogo
         5 > WHO
@@ -50,19 +52,19 @@ class TestApp (TestScript):
         1 > sup 23 05094 en    
         1 < Thank you for registering at Gashora 
         4 > WHO
-        4 < We don't recognize you
+        4 < Ntabwo dusobanukiwe, ntibyumvikana
         1 > who   
         1 < You are a Supervisor, located at Gashora, you speak English
 
         2 > sup 34 048547 fr
-        2 < Unknown Health Clinic ID: 048547
+        2 < Iyi nimero y'ibitaro ntizwi: 048547
         3 > SUP 23 048547 fr
-        3 < Unknown Health Clinic ID: 048547
+        3 < Iyi nimero y'ibitaro ntizwi: 048547
     """
     
     testPregnancy = """
         1 > pre 10003 1982
-        1 < You need to be registered first, use the REG keyword
+        1 < Ugomba kubanza kwiyandikisha, koresha ijambo REG
         1 > REG 08 01001 en
         1 < Thank you for registering at Biryogo
         1 > pre 10003 10.04.2009
@@ -101,9 +103,9 @@ class TestApp (TestScript):
     
     testRisk = """
         1 > risk 10003 ho
-        1 < You need to be registered first, use the REG keyword
+        1 < Ugomba kubanza kwiyandikisha, koresha ijambo REG
         1 > pre 10003 1982
-        1 < You need to be registered first, use the REG keyword
+        1 < Ugomba kubanza kwiyandikisha, koresha ijambo REG
         1 > REG 08 01001 en
         1 < Thank you for registering at Biryogo        
         1 > pre 10003 1982
@@ -120,21 +122,21 @@ class TestApp (TestScript):
         1 < type: Risk patient: 10003 fields: he, ho, mother_weight=68.00
         
         2 > risk 1000 ho fe ma
-        2 < You need to be registered first, use the REG keyword
+        2 < Ugomba kubanza kwiyandikisha, koresha ijambo REG
         2 > REG 08 01001 en
         2 < Thank you for registering at Biryogo
         2 > risk 1000 ho fe ma
         2 < Thank you! Risk report submitted successfully.
         
         3 > risk 1000 ho fe ma
-        3 < You need to be registered first, use the REG keyword
+        3 < Ugomba kubanza kwiyandikisha, koresha ijambo REG
         3 > REG 08 01001 en
         3 < Thank you for registering at Biryogo
         3 > risk
         3 < The correct format message is: RISK MOTHER_ID ACTION_CODE LOCATION_CODE MOTHER_WEIGHT
         
         4 > risk 10004 ho
-        4 < You need to be registered first, use the REG keyword
+        4 < Ugomba kubanza kwiyandikisha, koresha ijambo REG
         
         
 

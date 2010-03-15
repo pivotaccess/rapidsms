@@ -74,21 +74,17 @@ class Report(models.Model):
     def summary(self):
         return ", ".join(map(lambda f: unicode(f), self.fields.all()))
     
-RECIPIENT_CHOICES = ( ('SUP', 'Supervisor'),
-                      ('CHW', 'Community Health Worker'),
-                      ('ALL', 'Community Health Worker and Supervisor') )    
-
-class AlertAction(models.Model):
-    recipient = models.CharField(max_length=3, choices=RECIPIENT_CHOICES)
-    message = models.CharField(max_length=160)
+class AdviceText(models.Model):
+    """ Represents an automated text response that is returned to the CHW based on a set of matching
+        action codes. """
     
-    def __unicode__(self):
-        return "'%s' => %s" % (self.message, self.recipient)
-    
-class Alert(models.Model):
     name = models.CharField(max_length=128)
     description = models.TextField()
-    actions = models.ManyToManyField(AlertAction)
+    
+    message_kw = models.CharField(max_length=160)
+    message_fr = models.CharField(max_length=160)
+    message_en = models.CharField(max_length=160)
+
     triggers = models.ManyToManyField(FieldType)
     active = models.BooleanField(default=True)
     

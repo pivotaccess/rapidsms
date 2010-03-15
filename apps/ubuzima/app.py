@@ -6,7 +6,7 @@ from apps.locations.models import Location
 from apps.ubuzima.models import *
 from apps.reporters.models import *
 from django.utils.translation import ugettext as _
-from django.utils.translation import activate
+from django.utils.translation import activate, get_language
 from decimal import *
 from exceptions import Exception
 import traceback
@@ -312,19 +312,19 @@ class App (rapidsms.app.App):
                         location=reporter.location, village=reporter.village)
         return report
     
-    def maybe_send_alert(self, report):
+    def get_advice_text(self, report):
         """Called whenever we get a new report.  We run a set of rules based on action codes to figure out
-           if an alert should be sent, sending it up to supervisors if necessary."""
+           if an advice string should be sent instead of the usual default message."""
 
         types = []
         for field in report.fields.all():
             types.append(field.type.pk)
                
         # these are the alerts which may just be triggered by this report
-        alerts = Alert.objects.filter(triggers__in=types).distinct()
+        alerts = AdviceText.objects.filter(triggers__in=types).distinct()
 
-        # alerts that should be triggered
-        activated = []
+        # text that should be sent back
+        advice_texts = []
             
         # for each alert, see whether we should be triggered by it
         for alert in alerts:
@@ -341,24 +341,22 @@ class App (rapidsms.app.App):
                 if not found:
                     matching = False
             
+            print "advice: %s  matching: %s" % (alert, matching)
+            
             if matching:
-                activated.append(alert)
+                print "triggering advice text: %s" % alert.name
                 
-        # look up the supervisors for this CHW's clinic
-        group = ReporterGroup.objects.get(title='Supervisor')
-        sups = Reporter.objects.filter(location=report.location).filter(groups__in=group)
+                # pull out the appropriate message for this reporter
+                lang = get_language()
+                if lang == 'en':
+                    advice_texts.append(alert.message_en)
+                elif lang == 'fr':
+                    advice_texts.append(alert.message_fr)
+                else:
+                    advice_texts.append(alert.message_kw)
                 
-        # for each activated alert, send the appropriate message
-        for alert in activated:
-            # trigger each action
-            for action in alert.actions.all():
-                self.debug("triggering: %s" % alert.name)
-                
-                if action.recipient == 'CHW':
-                    message.respond(action.message)
-                elif action.recipient == 'SUP':
-                    for sup in sups:
-                        conn = sup.connection()
+        # return our advice texts
+        return advice_texts
                     
 
     @keyword("\s*pre(.*)")
@@ -413,7 +411,11 @@ class App (rapidsms.app.App):
         # maybe send some alerts
         #self.maybe_send_alert(report)
 
-        message.respond(_("Thank you! Pregnancy report submitted successfully."))
+        advices = self.get_advice_text(report)
+        if advices:
+            message.respond(" ".join(advices))
+        else:
+            message.respond(_("Thank you! Pregnancy report submitted successfully."))
         
         return True
     
@@ -459,7 +461,12 @@ class App (rapidsms.app.App):
         # maybe send some alerts
         #self.maybe_send_alert(report)            
             
-        message.respond(_("Thank you! Risk report submitted successfully."))
+        advices = self.get_advice_text(report)
+        if advices:
+            message.respond(" ".join(advices))
+        else:
+            message.respond(_("Thank you! Risk report submitted successfully."))
+        
         return True
     
     #Birth keyword
@@ -510,8 +517,13 @@ class App (rapidsms.app.App):
         
         # maybe send some alerts
         #self.maybe_send_alert(report)            
-            
-        message.respond(_("Thank you! Birth report submitted successfully."))
+        
+        advices = self.get_advice_text(report)
+        if advices:
+            message.respond(" ".join(advices))
+        else:
+            message.respond(_("Thank you! Birth report submitted successfully."))
+        
         return True
     
         #Birth keyword
@@ -563,7 +575,12 @@ class App (rapidsms.app.App):
         # maybe send some alerts
         #self.maybe_send_alert(report)            
             
-        message.respond(_("Thank you! Child health report submitted successfully."))
+        advices = self.get_advice_text(report)
+        if advices:
+            message.respond(" ".join(advices))
+        else:
+            message.respond(_("Thank you! Child health report submitted successfully."))
+        
         return True
     
     @keyword("\s*last")
