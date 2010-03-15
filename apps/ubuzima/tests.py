@@ -62,6 +62,22 @@ class TestApp (TestScript):
         3 < Iyi nimero y'ibitaro ntizwi: 048547
     """
     
+    testCC = """
+        101 > reg 500 05094 en
+        101 < Thank you for registering at Gashora
+        102 > sup 501 05094 en
+        102 < Thank you for registering at Gashora
+        101 > bir 101 01 bo
+        101 < Thank you! Birth report submitted successfully.
+        102 < 101: bir 101 01 bo
+        103 > sup 502 05094 en 
+        103 < Thank you for registering at Gashora
+        101 > bir 101 01 bo
+        101 < Thank you! Birth report submitted successfully.
+        102 < 101: bir 101 01 bo
+        103 < 101: bir 101 01 bo
+    """
+    
     testPregnancy = """
         1 > pre 10003 1982
         1 < Ugomba kubanza kwiyandikisha, koresha ijambo REG

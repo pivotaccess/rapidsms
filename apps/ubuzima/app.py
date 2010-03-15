@@ -357,7 +357,30 @@ class App (rapidsms.app.App):
                 
         # return our advice texts
         return advice_texts
-                    
+    
+    def cc_supervisor(self, message, report):
+        """ CC's the supervisor of the clinic for this CHW   """
+        
+        # look up our supervisor group type
+        sup_group = ReporterGroup.objects.get(title='Supervisor')
+        
+        # now look up to see if we have any reporters in this group with the same location as 
+        # our reporter
+        sups = Reporter.objects.filter(groups=sup_group, location=message.reporter.location)
+        
+        # reporter identity
+        reporter_ident = message.reporter.connection().identity
+        
+        # we have at least one supervisor
+        if sups:
+            for sup in sups:
+                # load the connection for it
+                conn = sup.connection()
+                
+                # and send this message to them
+                message.forward(conn.identity, 
+                               _("%(phone)s: %(message)s") % { 'phone': reporter_ident, 'message': message.text })
+
 
     @keyword("\s*pre(.*)")
     def pregnancy(self, message, notice):
@@ -408,14 +431,15 @@ class App (rapidsms.app.App):
             field.save()
             report.fields.add(field)            
 
-        # maybe send some alerts
-        #self.maybe_send_alert(report)
-
+        # either return an advice text, or our default text for this message type
         advices = self.get_advice_text(report)
         if advices:
             message.respond(" ".join(advices))
         else:
             message.respond(_("Thank you! Pregnancy report submitted successfully."))
+            
+        # cc the supervisor if there is one
+        self.cc_supervisor(message, report)
         
         return True
     
@@ -458,14 +482,15 @@ class App (rapidsms.app.App):
             field.save()
             report.fields.add(field)
             
-        # maybe send some alerts
-        #self.maybe_send_alert(report)            
-            
+        # either send back our advice text or our default response
         advices = self.get_advice_text(report)
         if advices:
             message.respond(" ".join(advices))
         else:
             message.respond(_("Thank you! Risk report submitted successfully."))
+            
+        # cc the supervisor if there is one
+        self.cc_supervisor(message, report)
         
         return True
     
@@ -515,14 +540,15 @@ class App (rapidsms.app.App):
             field.save()
             report.fields.add(field)            
         
-        # maybe send some alerts
-        #self.maybe_send_alert(report)            
-        
+        # either send back the advice text or our default msg
         advices = self.get_advice_text(report)
         if advices:
             message.respond(" ".join(advices))
         else:
             message.respond(_("Thank you! Birth report submitted successfully."))
+            
+        # cc the supervisor if there is one
+        self.cc_supervisor(message, report)
         
         return True
     
@@ -572,14 +598,15 @@ class App (rapidsms.app.App):
             field.save()
             report.fields.add(field)            
     
-        # maybe send some alerts
-        #self.maybe_send_alert(report)            
-            
+        # respond either with our advice text or our default msg
         advices = self.get_advice_text(report)
         if advices:
             message.respond(" ".join(advices))
         else:
             message.respond(_("Thank you! Child health report submitted successfully."))
+            
+        # cc the supervisor if there is one
+        self.cc_supervisor(message, report)
         
         return True
     
