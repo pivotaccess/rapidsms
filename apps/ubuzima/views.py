@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # vim: ai ts=4 sts=4 et sw=4
 
+from django.core.paginator import Paginator, InvalidPage, EmptyPage
 from django.http import HttpResponse, HttpResponseNotAllowed, HttpResponseServerError
 from django.template import RequestContext
 from django.views.decorators.http import require_GET, require_POST, require_http_methods
@@ -13,8 +14,10 @@ from reporters.models import *
 from reporters.utils import *
 from ubuzima.models import *
 
+
 @permission_required('reports.can_view')
-@require_GET
+#@require_GET
+@require_http_methods(["GET"])
 def index(req):
     return render_to_response(req,
         "ubuzima/index.html", {

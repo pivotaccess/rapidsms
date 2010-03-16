@@ -1,3 +1,5 @@
+{% load reporters-tags %}
+
 <table width="100%"> 
     <thead>
         <tr>
@@ -15,7 +17,7 @@
             <tr>
             	<td><a href="/ubuzima/report/{{report.pk}}">{{report.pk}}</a></td>
                 <td>{{report.created|date:"d.m.Y"}}</td>
-                <td>{{report.location.name}}</td>
+                <td><a href="/ubuzima/location/{{report.location.name}}">{{report.location.name}}</a></td>
                 <td><a href="/ubuzima/type/{{report.type.pk}}">{{report.type.name}}</a></td>
                 <td><a href="/ubuzima/reporter/{{report.reporter.pk}}">{{report.reporter.alias}}</a></td>
                 <td><a href="/ubuzima/patient/{{report.patient.pk}}">{{report.patient.national_id}}</a></td>
@@ -23,4 +25,22 @@
             </tr>
         {% endfor %}
     </tbody>
+    <tfoot>
+					<tr>
+						<td colspan="4">
+							<div class="paginator">{% if reports.has_previous %}
+								<a href="{% self_link "page" 1 %}" class="first" title="First page">First Page</a>
+								<a href="{% self_link "page" reports.previous_page_number %}" class="prev" title="Previous page">Previous Page</a>{% else %}
+								<span class="first na" title="You are already on the first page">First Page</span>
+								<span class="prev na" title="There are no previous pages">Previous Page</span>{% endif %}{% for page in reports.paginator.page_range %}
+								<a href="{% self_link "page" page %}"{% ifequal page reports.number %} class="active"{% endifequal %} title="Page {{ page }}">{{ page }}</a>{% endfor %}{% if reports.has_next %}
+								<a href="{% self_link "page" reports.next_page_number %}" class="next" title="Next page">Next Page</a>
+								<a href="{% self_link "page" reports.paginator.num_pages %}" class="last" title="Last page">Last Page</a>{% else %}
+								<span class="next na" title="There are no more pages">Next Page</span>
+								<span class="last na" title="You are already on the last page">Last Page</span>{% endif %}
+							</div>
+							
+						</td>
+					</tr>
+				</tfoot>
 </table>
