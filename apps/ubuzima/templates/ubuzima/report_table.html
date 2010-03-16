@@ -17,7 +17,7 @@
             <tr>
             	<td><a href="/ubuzima/report/{{report.pk}}">{{report.pk}}</a></td>
                 <td>{{report.created|date:"d.m.Y"}}</td>
-                <td><a href="/ubuzima/location/{{report.location.name}}">{{report.location.name}}</a></td>
+                <td><a href="/ubuzima/location/{{report.location.pk}}">{{report.location.name}}</a></td>
                 <td><a href="/ubuzima/type/{{report.type.pk}}">{{report.type.name}}</a></td>
                 <td><a href="/ubuzima/reporter/{{report.reporter.pk}}">{{report.reporter.alias}}</a></td>
                 <td><a href="/ubuzima/patient/{{report.patient.pk}}">{{report.patient.national_id}}</a></td>

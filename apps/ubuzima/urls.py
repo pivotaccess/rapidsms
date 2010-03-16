@@ -11,5 +11,6 @@ urlpatterns = patterns('',
     url(r'^ubuzima/type/(?P<pk>\d+)$', views.by_type),
     url(r'^ubuzima/advices$', views.advices),
     url(r'^ubuzima/advice/(?P<pk>\d+)$', views.advice),
-    url(r'^ubuzima/report/(?P<pk>\d+)$', views.view_report)
+    url(r'^ubuzima/report/(?P<pk>\d+)$', views.view_report),
+    url(r'^ubuzima/location/(?P<pk>\d+)$', views.by_location)
 )

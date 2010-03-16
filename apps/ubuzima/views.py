@@ -59,7 +59,14 @@ def by_reporter(req, pk):
     return render_to_response(req,
                               "ubuzima/reporter.html", { "reports":    paginated(req, reports, prefix="rep"),
                                                          "reporter":   reporter })
-
+@require_http_methods(["GET"])
+def by_location(req, pk):
+    location = get_object_or_404(Location, pk=pk)
+    reports = Report.objects.filter(location=location).order_by("-created")
+    
+    return render_to_response(req,
+                              "ubuzima/location.html", { "location":   location,
+                                                         "reports":   paginated(req, reports, prefix="rep") })
 @require_http_methods(["GET"])
 def advices(req):
     advices = AdviceText.objects.all()
