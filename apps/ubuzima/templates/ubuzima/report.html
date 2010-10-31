@@ -14,7 +14,7 @@
 <table width="50%"> 
     <tbody>
         <tr>
-        	<td>Date</td>
+        	<td>Message Date</td>
         	<td>{{report.created}}</td>
         </tr>
     
@@ -27,6 +27,13 @@
         	<td>Mother Id</td>
         	<td><a href="/ubuzima/patient/{{report.patient.pk}}">{{report.patient}}</a>
         </tr>
+
+        {% if report.date_string %}
+        <tr>
+                <td>Date</td>
+                <td>{{ report.date_string }}</td>
+        </tr>
+        {% endif %}
     
         <tr>
         	<td>Location</td>

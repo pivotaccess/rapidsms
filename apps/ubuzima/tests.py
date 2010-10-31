@@ -251,7 +251,7 @@ class TestTriggers (TestScript):
        2 < 1: Alert to supervisor about ma-he
        3 < 1: Alert to district supervisor about he (fr)
        1 < Advice about ma.
-       2 < 1: Pregnancy Report: Date=1965, Patient=123459, Location=Gashora, Hemorrhaging/Bleeding, Malaria
+       2 < 1: Pregnancy Report: Patient=123459, Location=Gashora, Date=1965, Hemorrhaging/Bleeding, Malaria
     """
 
 class TestApp (TestScript):
@@ -338,11 +338,11 @@ class TestApp (TestScript):
         1 > pre 10003 10.04.2009
         1 < Thank you! Pregnancy report submitted successfully.
         1 > LAST
-        1 < Pregnancy Report: Date=10.04.2009, Patient=10003, Location=Biryogo
+        1 < Pregnancy Report: Patient=10003, Location=Biryogo, Date=10.04.2009
         1 > pre 10003 10.04.2009 68kpp
         1 < Thank you! Pregnancy report submitted successfully.
         1 > LAST
-        1 < Pregnancy Report: Date=10.04.2009, Patient=10003, Location=Biryogo, Mother weight=68.00
+        1 < Pregnancy Report: Patient=10003, Location=Biryogo, Date=10.04.2009, Mother weight=68.00
         1 > pre 10003 1982 ho ma fe 
         1 < Thank you! Pregnancy report submitted successfully.
         1 > pre 10003 14.4.2010 ho ma fe 
@@ -377,7 +377,7 @@ class TestApp (TestScript):
         1 > pre 10003 1982
         1 < Thank you! Pregnancy report submitted successfully.
         1 > last
-        1 < Pregnancy Report: Date=1982, Patient=10003, Location=Biryogo
+        1 < Pregnancy Report: Patient=10003, Location=Biryogo, Date=1982
         1 > risk 10003 ho
         1 < Thank you! Risk report submitted successfully.
         1 > last
@@ -424,7 +424,7 @@ class TestApp (TestScript):
         1 > bir 123459 03 ho ma 5.43cm 3.2kg 10.4.2010
         1 < Thank you! Birth report submitted successfully.
         1 > last
-        1 < Birth Report: Date=10.04.2010, Patient=123459, Location=Gashora, At home, Malaria, MUAC=5.43, Child weight=3.20, Child Number=3.00
+        1 < Birth Report: Patient=123459, Location=Gashora, Date=10.04.2010, At home, Malaria, MUAC=5.43, Child weight=3.20, Child Number=3.00
     """    
     
     testChildHealth = """
@@ -448,7 +448,7 @@ class TestApp (TestScript):
         1 > chi 123459 1 ho ma 5.43cm 3.2kg 10.04.2010
         1 < Thank you! Child health report submitted successfully.
         1 > last
-        1 < Child Health Report: Date=10.04.2010, Patient=123459, Location=Gashora, At home, Malaria, MUAC=5.43, Child weight=3.20, Child Number=1.00
+        1 < Child Health Report: Patient=123459, Location=Gashora, Date=10.04.2010, At home, Malaria, MUAC=5.43, Child weight=3.20, Child Number=1.00
         1 > chi 12345 4 ho 3.3k
         1 < Thank you! Child health report submitted successfully.
         1 > last

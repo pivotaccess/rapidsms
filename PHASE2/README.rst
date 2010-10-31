@@ -4,6 +4,13 @@ Migration
 
 Some new features require database changes.  This document details how to apply them.
 
+Backup the DB
+-------------
+
+Make sure to do a backup of the current database before starting.  Just shut down the router and server and run::
+
+   % mysqldump -u ubuzima -p ubuzima > backup.sql
+
 SQL Migration
 -------------
 
@@ -17,6 +24,8 @@ Finally, add the new tables that are needed by running syncdb::
 
    % python rapidsms syncdb
 
+This will probably ask you about deleting unused content types, go ahead and do that.
+
 Date Migration
 --------------
 
@@ -27,9 +36,9 @@ One of the things changed was to add a real date field to the Report object.  We
 Reminder Tables
 ---------------
 
-Finally, we added some other new fields for reminders that need to be loaded via fixtures.
+We added some other new fields for reminders that need to be loaded via fixtures::
 
-   % python loaddata reminder_types.json
+   % python rapidsms loaddata reminder_types.json
 
 Unit Tests
 ----------

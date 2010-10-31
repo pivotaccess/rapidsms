@@ -85,13 +85,16 @@ class Report(models.Model):
     def summary(self):
         summary = ""
         if self.date_string:
-            summary += "Date=" + self.date_string + ", "
-        return summary + ", ".join(map(lambda f: unicode(f), self.fields.all()))
+            summary += "Date=" + self.date_string
+
+        if self.fields.all():
+            if self.date_string: summary += ", "
+            summary += ", ".join(map(lambda f: unicode(f), self.fields.all()))
+
+        return summary
 
     def as_verbose_string(self):
         verbose = _("%s Report: ") % self.type.name
-        if self.date_string:
-            verbose += _("Date=%s, ") % self.date_string
         verbose += _("Patient=%s, ") % self.patient
         verbose += _("Location=%s") % self.location
         if self.village:
@@ -125,15 +128,22 @@ class Report(models.Model):
         """
         (start, end) = cls.calculate_reminder_range(date, days)
 
+        # only check pregnancy reports
+        # TODO: should we check others as well?  not sure what the date means in RISK reports
+        # For now we assume everybody needs to register with a pregnancy report first
+        preg_type = ReportType.objects.get(pk=4)
+
+        # we only allow one report per patient
+        reports = {}
+
         # filter our reports based on which have not received a reminder yet.
         # TODO: this is simple, but could get slow, at some point it may be worth
         # replacing it with some fancy SQL
-        reports = []
-        for report in Report.objects.filter(date__gte=start, date__lte=end):
+        for report in Report.objects.filter(date__gte=start, date__lte=end, type=preg_type):
             if not report.reminders.filter(type=reminder_type):
-                reports.append(report)
+                reports[report.patient.national_id] = report
 
-        return reports
+        return reports.values()
     
     @classmethod
     def calculate_edd(cls, last_menses):
