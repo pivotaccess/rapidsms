@@ -23,7 +23,11 @@ except:
     pass
 
 # add extra libs to the python sys path
+#for lib in libs:
+#    sys.path.insert(0, lib)
 sys.path.extend(libs)
+
+print sys.path
 
 # import manager now that the path is correct
 from rapidsms import manager

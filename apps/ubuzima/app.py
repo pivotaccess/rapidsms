@@ -318,51 +318,70 @@ class App (rapidsms.app.App):
                         location=reporter.location, village=reporter.village)
         return report
     
-    def get_advice_text(self, report):
-        """Called whenever we get a new report.  We run a set of rules based on action codes to figure out
-           if an advice string should be sent instead of the usual default message."""
+    def run_triggers(self, message, report):
+        """Called whenever we get a new report.  We run our triggers, figuring out if there 
+           are messages to send out to supervisors.  We return the message that should be sent
+           to the reporter themselves, or None if there is no matching trigger for the reporter."""
+        # find all matching triggers
+        triggers = TriggeredText.get_triggers_for_report(report)
 
-        types = []
-        for field in report.fields.all():
-            types.append(field.type.pk)
-               
-        # these are the alerts which may just be triggered by this report
-        alerts = AdviceText.objects.filter(triggers__in=types).distinct()
+        # the message we'll send back to the reporter
+        reporter_message = None
 
-        # text that should be sent back
-        advice_texts = []
-            
-        # for each alert, see whether we should be triggered by it
-        for alert in alerts:
-            matching = True
-            
-            for trigger in alert.triggers.all():
-                found = False
-                for field in report.fields.all():
-                    if trigger.pk == field.type.pk:
-                        found = True
-                        break
-            
-                # not found?  this won't trigger
-                if not found:
-                    matching = False
-            
-            print "advice: %s  matching: %s" % (alert, matching)
-            
-            if matching:
-                print "triggering advice text: %s" % alert.name
+        # for each one
+        for trigger in triggers:
+            lang = get_language()
+
+            # if the destination is the supervisor
+            if trigger.destination != TriggeredText.DESTINATION_CHW:
+                reporter_ident = report.reporter.connection().identity
+                sup_group = ReporterGroup.objects.get(title='Supervisor')
+        
+                # figure out what location we'll use to find supervisors
+                location = report.reporter.location
+
+                # if we are supposed to tell the district supervisor and our current location 
+                # is a health clinic, then walk up the tree looking for a hospital
+                if trigger.destination == TriggeredText.DESTINATION_DIS and location.type.pk == 5:  # health center
+                    # find the parent
+                    if location.parent:
+                        location = location.parent
+                    # couldn't find it?  oh well, we'll alert the normal supervisor
+                    
+                # now look up to see if we have any reporters in this group 
+                # with the same location as  our reporter
+                sups = Reporter.objects.filter(groups=sup_group, location=location).order_by("pk")
+
+                # for each supervisor
+                for sup in sups:
+                    # load the connection for it
+                    conn = sup.connection()
+                    lang = sup.language
+
+                    # get th appropriate message to send
+                    text = trigger.message_kw
+                    if lang == 'en':
+                        text = trigger.message_en
+                    elif lang == 'fr':
+                        text = trigger.message_fr
                 
-                # pull out the appropriate message for this reporter
+                    # and send this message to them
+                    forward = _("%(phone)s: %(text)s" % { 'phone': reporter_ident, 'text': text })
+
+                    message.forward(conn.identity, forward)
+                    
+            # otherwise, this is just a response to the reporter
+            else:
+                # calculate our message based on language, we'll return it in a bit
                 lang = get_language()
+                reporter_message = trigger.message_kw
                 if lang == 'en':
-                    advice_texts.append(alert.message_en)
+                    reporter_message = trigger.message_en
                 elif lang == 'fr':
-                    advice_texts.append(alert.message_fr)
-                else:
-                    advice_texts.append(alert.message_kw)
-                
+                    reporter_message = trigger.message_fr
+
         # return our advice texts
-        return advice_texts
+        return reporter_message
     
     def cc_supervisor(self, message, report):
         """ CC's the supervisor of the clinic for this CHW   """
@@ -376,6 +395,9 @@ class App (rapidsms.app.App):
         
         # reporter identity
         reporter_ident = message.reporter.connection().identity
+	
+	#reporter village
+	reporter_village = message.reporter.village
         
         # we have at least one supervisor
         if sups:
@@ -384,9 +406,8 @@ class App (rapidsms.app.App):
                 conn = sup.connection()
                 
                 # and send this message to them
-                message.forward(conn.identity, 
-                               _("%(phone)s: %(message)s") % { 'phone': reporter_ident, 'message': message.text })
-
+                forward = _("%(phone)s: %(report)s" % { 'phone': reporter_ident, 'report': report.as_verbose_string() })
+                message.forward(conn.identity, forward)
 
     @keyword("\s*pre(.*)")
     def pregnancy(self, message, notice):
@@ -419,7 +440,8 @@ class App (rapidsms.app.App):
         
         # create our report
         report = self.create_report('Pregnancy', patient, message.reporter)
-        report.date = last_menses
+
+        report.set_date_string(last_menses)
         
         # read our fields
         try:
@@ -438,9 +460,9 @@ class App (rapidsms.app.App):
             report.fields.add(field)            
 
         # either return an advice text, or our default text for this message type
-        advices = self.get_advice_text(report)
-        if advices:
-            message.respond(" ".join(advices))
+        response = self.run_triggers(message,report)
+        if response:
+            message.respond(response)
         else:
             message.respond(_("Thank you! Pregnancy report submitted successfully."))
             
@@ -489,9 +511,9 @@ class App (rapidsms.app.App):
             report.fields.add(field)
             
         # either send back our advice text or our default response
-        advices = self.get_advice_text(report)
-        if advices:
-            message.respond(" ".join(advices))
+        response = self.run_triggers(message, report)
+        if response:
+            message.respond(response)
         else:
             message.respond(_("Thank you! Risk report submitted successfully."))
             
@@ -532,7 +554,7 @@ class App (rapidsms.app.App):
 
         # set the dob for the child if we got one
         if dob:
-            report.date = dob
+            report.set_date_string(dob)
             
         # set the child number
         child_num_type = FieldType.objects.get(key='child_number')
@@ -547,9 +569,9 @@ class App (rapidsms.app.App):
             report.fields.add(field)            
         
         # either send back the advice text or our default msg
-        advices = self.get_advice_text(report)
-        if advices:
-            message.respond(" ".join(advices))
+        response = self.run_triggers(message, report)
+        if response:
+            message.respond(response)
         else:
             message.respond(_("Thank you! Birth report submitted successfully."))
             
@@ -590,7 +612,7 @@ class App (rapidsms.app.App):
 
         # set the dob for the child if we got one
         if dob:
-            report.date = dob
+            report.set_date_string(dob)
 
         # set the child number
         child_num_type = FieldType.objects.get(key='child_number')
@@ -605,9 +627,9 @@ class App (rapidsms.app.App):
             report.fields.add(field)            
     
         # respond either with our advice text or our default msg
-        advices = self.get_advice_text(report)
-        if advices:
-            message.respond(" ".join(advices))
+        response = self.run_triggers(message, report)
+        if response:
+            message.respond(response)
         else:
             message.respond(_("Thank you! Child health report submitted successfully."))
             
@@ -636,9 +658,8 @@ class App (rapidsms.app.App):
         for field in report.fields.all().order_by('type'):
             fields.append(unicode(field))
             
-        dob = _(" Date: %(date)s") % { 'date': report.date } if report.date else ""
+        dob = _(" Date: %(date)s") % { 'date': report.date_string } if report.date_string else ""
         
-        message.respond("type: %s patient: %s%s fields: %s" %
-            (report.type, report.patient, dob, ", ".join(fields)))
+        message.respond(report.as_verbose_string())
         
         return True    

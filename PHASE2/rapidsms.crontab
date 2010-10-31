@@ -1,0 +1,4 @@
+MAILTO="pivot@pivotaccess.com"
+
+# every day at 8 am, check our reminders
+5 8 * * * cd /home/rapidsms/rapidsms/ && /home/rapidsms/rapidsms/env/bin/python -W ignore::DeprecationWarning manage.py checkreminders

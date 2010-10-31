@@ -29,9 +29,16 @@ def by_patient(req, pk):
     patient = get_object_or_404(Patient, pk=pk)
     reports = Report.objects.filter(patient=patient).order_by("-created")
     
+    # look up any reminders sent to this patient
+    reminders = []
+    for report in reports:
+        for reminder in report.reminders.all():
+            reminders.append(reminder)
+
     return render_to_response(req,
                               "ubuzima/patient.html", { "patient":    patient,
-                                                        "reports":    paginated(req, reports, prefix="rep") })
+                                                        "reports":    paginated(req, reports, prefix="rep"),
+                                                        "reminders":  reminders })
     
 @require_http_methods(["GET"])
 def by_type(req, pk):
@@ -68,18 +75,18 @@ def by_location(req, pk):
                               "ubuzima/location.html", { "location":   location,
                                                          "reports":   paginated(req, reports, prefix="rep") })
 @require_http_methods(["GET"])
-def advices(req):
-    advices = AdviceText.objects.all()
+def triggers(req):
+    triggers = TriggeredText.objects.all()
     
     return render_to_response(req,
-                              'ubuzima/advices.html', { 'advices': paginated(req, advices, prefix='ad') } )
+                              'ubuzima/triggers.html', { 'triggers': paginated(req, triggers, prefix='trg') } )
     
  
 @require_http_methods(["GET"])
-def advice(req, pk):
-    advice = AdviceText.objects.get(pk=pk)
+def trigger(req, pk):
+    trigger = TriggeredText.objects.get(pk=pk)
     
     return render_to_response(req,
-                              'ubuzima/advice.html', { 'advice': advice })
+                              'ubuzima/trigger.html', { 'trigger': trigger })
         
     

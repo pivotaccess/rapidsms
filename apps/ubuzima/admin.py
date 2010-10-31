@@ -6,7 +6,11 @@ admin.site.register(ReportType)
 admin.site.register(Field)
 admin.site.register(FieldType)
 admin.site.register(Patient)
-admin.site.register(AdviceText)
+
+class TriggerAdmin(admin.ModelAdmin):
+    pass
+
+admin.site.register(TriggeredText, TriggerAdmin)
 
 
 

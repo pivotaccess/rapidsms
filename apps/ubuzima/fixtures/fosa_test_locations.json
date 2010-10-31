@@ -16,16 +16,25 @@
             "name": "Est",
 	    "type": 1,
 	    "code": "05"
-       }
+        }
     },
     {
         "pk": 3,
         "model": "locations.location",
         "fields": {
-        "name": "Gashora",
+        "name": "Gashora Hospital",
 	    "type": 4,
-	    "code": "F05094"
-       }
-   }    
-    
+	    "code": "F05096"
+        }
+    },
+    {
+        "pk": 4,
+        "model": "locations.location",
+        "fields": {
+           "name": "Gashora",
+           "type": 5,
+   	   "code": "F05094",
+           "parent": 3
+        }
+    }
 ]
