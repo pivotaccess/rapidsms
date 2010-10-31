@@ -14,6 +14,6 @@ rename table ubuzima_advicetext to ubuzima_triggeredtext, ubuzima_advicetext_tri
 # remap our association
 alter table ubuzima_triggeredtext_triggers change column advicetext_id triggeredtext_id int;
 
-# add two fields for type and destination
+# add our destination field
 alter table ubuzima_triggeredtext add column destination varchar(3) default 'CHW' after name;
 
