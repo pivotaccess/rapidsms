@@ -120,24 +120,24 @@ class Command(BaseCommand):
         today = datetime.date.today()
 
         # ANC2
-#        reminder_type = ReminderType.objects.get(pk=1)
-#        self.check_reminders(today, Report.DAYS_ANC2, reminder_type)
+        reminder_type = ReminderType.objects.get(pk=1)
+        self.check_reminders(today, Report.DAYS_ANC2, reminder_type)
 
         # ANC3
-#        reminder_type = ReminderType.objects.get(pk=2)
-#        self.check_reminders(today, Report.DAYS_ANC3, reminder_type)
+        reminder_type = ReminderType.objects.get(pk=2)
+        self.check_reminders(today, Report.DAYS_ANC3, reminder_type)
 
         # ANC4
-#        reminder_type = ReminderType.objects.get(pk=3)
-#        self.check_reminders(today, Report.DAYS_ANC4, reminder_type)
+        reminder_type = ReminderType.objects.get(pk=3)
+        self.check_reminders(today, Report.DAYS_ANC4, reminder_type)
 
         # EDD
-#        reminder_type = ReminderType.objects.get(pk=4)
-#        self.check_reminders(today, Report.DAYS_EDD, reminder_type)
+        reminder_type = ReminderType.objects.get(pk=4)
+        self.check_reminders(today, Report.DAYS_EDD, reminder_type)
 
         # EDD for SUPs
-#        reminder_type = ReminderType.objects.get(pk=5)
-#        self.check_reminders(today, Report.DAYS_SUP_EDD, reminder_type, to_sup=True)
+        reminder_type = ReminderType.objects.get(pk=5)
+        self.check_reminders(today, Report.DAYS_SUP_EDD, reminder_type, to_sup=True)
 
         # Finally look for any reports who need reminders
         self.check_expired_reporters()
