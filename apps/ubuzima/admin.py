@@ -6,6 +6,8 @@ admin.site.register(ReportType)
 admin.site.register(Field)
 admin.site.register(FieldType)
 admin.site.register(Patient)
+admin.site.register(ReminderType)
+admin.site.register(Reminder)
 
 class TriggerAdmin(admin.ModelAdmin):
     pass
